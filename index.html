@@ -853,6 +853,18 @@ function findSheet(wb, name){
 /* Lê um workbook (SheetJS) já carregado e devolve os arrays prontos para uso,
    a partir das abas "Base" e "RESSARCIMENTO" (case-insensitive). Compartilhado
    entre a importação manual de arquivo e a busca automática no servidor. */
+/* As planilhas às vezes têm espaços "invisíveis" no nome da coluna
+   (ex: " Reembolso " em vez de "Reembolso") — isso não aparece no Excel,
+   mas faz a leitura falhar silenciosamente. Aqui a gente tira esses espaços
+   de toda coluna antes de usar, então funciona mesmo com esse tipo de erro. */
+function normalizeRowKeys(row){
+  const out = {};
+  Object.keys(row).forEach(k=>{
+    out[String(k).trim()] = row[k];
+  });
+  return out;
+}
+
 function parseWorkbook(wb){
   const baseSheet = findSheet(wb, 'base');
   const ressSheet = findSheet(wb, 'ressarcimento');
@@ -861,7 +873,8 @@ function parseWorkbook(wb){
   if(baseSheet){
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[baseSheet], {defval:0});
     newBase = [];
-    rows.forEach(row=>{
+    rows.forEach(rawRow=>{
+      const row = normalizeRowKeys(rawRow);
       if(!row['Transportadora']) return;
       const mesAno = normalizeDate(row['Mês/Ano']);
       if(!mesAno) return;
@@ -883,7 +896,8 @@ function parseWorkbook(wb){
   if(ressSheet){
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[ressSheet], {defval:''});
     newRess = [];
-    rows.forEach(row=>{
+    rows.forEach(rawRow=>{
+      const row = normalizeRowKeys(rawRow);
       const nf = row['Nota fiscal'];
       if(!nf && nf!==0) return;
       newRess.push({

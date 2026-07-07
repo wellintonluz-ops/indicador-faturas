@@ -961,7 +961,7 @@ document.getElementById('fileInput').addEventListener('change', handleFile);
 /* ---------------- Servidor (Cloudflare Worker) ----------------
    A planilha com dados sensíveis não fica no código do site — ela é buscada
    em tempo real deste endpoint, que você controla separadamente. */
-const REMOTE_XLSX_URL = 'https://curly-breeze-8e48.wellinton-luz.workers.dev/';
+const REMOTE_XLSX_URL = 'https://indicador-faturas.wellinton-luz.workers.dev/';
 
 async function fetchRemoteWorkbook(){
   // O parâmetro ?t= muda a cada chamada, então nenhuma camada de cache

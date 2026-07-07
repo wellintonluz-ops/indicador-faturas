@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indicadores de Faturas — Grupo TBX</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#080b14;
+  --bg-1:#0f1526;
+  --bg-2:#141b32;
+  --bg-3:#1a2340;
+  --border-1:#232c4d;
+  --border-2:#2c3760;
+  --text-0:#eef1fa;
+  --text-1:#9aa5c4;
+  --text-2:#5f6a8c;
+  --blue:#5b8def;
+  --teal:#2dd4bf;
+  --amber:#f5a623;
+  --rose:#f2537c;
+  --violet:#a78bfa;
+  --green:#34d399;
+  --red:#f2637a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -8px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: radial-gradient(1200px 600px at 15% -10%, #101a34 0%, transparent 60%),
+              radial-gradient(1000px 500px at 110% 10%, #12203a 0%, transparent 55%),
+              var(--bg-0);
+  color:var(--text-0);
+  font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+#app{max-width:1360px;margin:0 auto;padding:28px 20px 80px;}
+
+header.top{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:26px;
+  padding-bottom:22px;
+  border-bottom:1px solid var(--border-1);
+}
+.brand-eyebrow{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2);
+  font-weight:600;margin-bottom:6px;
+}
+h1{font-size:26px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;}
+.subtitle{color:var(--text-1);font-size:13.5px;margin:0;}
+.top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:600;
+  border:1px solid var(--border-2);cursor:pointer;transition:.15s ease;
+  background:var(--bg-2);color:var(--text-0);
+}
+.btn:hover{background:var(--bg-3);border-color:#39457a;}
+.btn.primary{background:linear-gradient(180deg,#4f7fe8,#3f6bd6);border-color:#3f6bd6;color:#fff;}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.ghost{background:transparent;}
+.btn svg{width:15px;height:15px;flex:none;}
+
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;margin-bottom:24px;
+}
+.kpi{
+  background:var(--bg-1);border:1px solid var(--border-1);border-radius:14px;
+  padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.kpi::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--blue));
+}
+.kpi .label{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:8px;}
+.kpi .value{font-size:21px;font-weight:800;letter-spacing:-.01em;}
+.kpi .sub{font-size:11.5px;color:var(--text-1);margin-top:4px;}
+
+.filters{
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+  background:var(--bg-1);border:1px solid var(--border-1);border-radius:14px;
+  padding:14px 16px;margin-bottom:26px;
+}
+.filters label{font-size:11.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-right:6px;}
+select{
+  background:var(--bg-2);color:var(--text-0);border:1px solid var(--border-2);
+  border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;
+}
+.filters .fgroup{display:flex;align-items:center;}
+.filters .spacer{flex:1;}
+.datacount{font-size:12px;color:var(--text-2);}
+
+section.panel{
+  position:relative;
+  background:var(--bg-1);border:1px solid var(--border-1);border-radius:16px;
+  padding:22px 22px 12px;margin-bottom:22px;box-shadow:var(--shadow);
+}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
+.panel-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent,var(--blue));}
+.panel-desc{font-size:12px;color:var(--text-2);margin:0 0 14px;}
+
+.chart-grid{display:grid;grid-template-columns:1fr;gap:28px;}
+.chart-grid.eq{grid-template-columns:1fr;}
+.chart-grid.three{grid-template-columns:1fr;}
+.chart-box{position:relative;height:340px;padding-bottom:14px;}
+.chart-box.tall{height:380px;}
+
+.mini-donut{
+  position:absolute; top:20px; right:22px; width:190px; z-index:5;
+  background:transparent; border:none; box-shadow:none;
+  padding:0;
+}
+.mini-donut-label{
+  font-size:10px; color:var(--text-2); text-transform:uppercase; letter-spacing:.08em;
+  font-weight:700; text-align:center; margin-bottom:2px;
+}
+.mini-donut-canvas-wrap{position:relative; height:135px;}
+.chart-note{font-size:11px;color:var(--text-2);margin:8px 0 14px;}
+
+select.inline-select{margin-left:auto;}
+
+#toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:50;}
+.toast{
+  background:var(--bg-3);border:1px solid var(--border-2);color:var(--text-0);
+  padding:12px 16px;border-radius:10px;font-size:13px;box-shadow:var(--shadow);
+  max-width:340px;animation:slidein .2s ease;
+}
+.toast.error{border-color:var(--red);}
+@keyframes slidein{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.sync-badge{
+  font-size:11px;padding:4px 9px;border-radius:999px;font-weight:600;
+  display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border-2);color:var(--text-1);
+}
+.sync-badge.on{color:var(--green);border-color:#1e5c46;}
+.sync-badge.off{color:var(--text-2);}
+.sync-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+footer{margin-top:10px;text-align:center;color:var(--text-2);font-size:11.5px;}
+a.linklike{color:var(--teal);text-decoration:none;cursor:pointer;}
+a.linklike:hover{text-decoration:underline;}
+
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<!-- Plugin para exibir os valores fixos nos gráficos -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<!-- SheetJS (leitura de .xlsx no navegador) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase (opcional — sem config preenchida, o app roda só com localStorage) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <header class="top">
+    <div>
+      <div class="brand-eyebrow">Grupo TBX · Logística</div>
+      <h1>Indicadores de Faturas</h1>
+      <p class="subtitle">Faturamento, custos variáveis e ressarcimentos por transportadora</p>
+    </div>
+    <div class="top-actions">
+      <span class="sync-badge off" id="syncBadge"><span class="dot"></span>Somente local (sem Firebase)</span>
+      <button class="btn ghost" id="btnReset" title="Restaurar dados de exemplo e apagar importações">Restaurar exemplo</button>
+      <button class="btn primary" id="btnImport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        Importar Excel
+      </button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+    </div>
+  </header>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="filters">
+    <div class="fgroup">
+      <label>Período</label>
+      <select id="fPeriodo"></select>
+    </div>
+    <div class="fgroup">
+      <label>Transportadora</label>
+      <select id="fTransp"></select>
+    </div>
+    <div class="spacer"></div>
+    <div class="datacount" id="dataCount"></div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><span class="dot" style="--accent:var(--blue)"></span>Faturamento</div>
+    </div>
+    <p class="panel-desc">Frete transportadora x frete cliente e margem faturada, mês a mês e por transportadora</p>
+    <div class="chart-grid">
+      <div class="chart-box"><canvas id="chartFaturamentoMensal"></canvas></div>
+      <div class="chart-box"><canvas id="chartFaturamentoTransp"></canvas></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><span class="dot" style="--accent:var(--rose)"></span>Custos variáveis</div>
+    </div>
+    <p class="panel-desc">Reentrega, devolução, peças, frete grátis e reposição — por tipo e por transportadora</p>
+    <div class="chart-grid">
+      <div class="chart-box"><canvas id="chartCustosTipo"></canvas></div>
+      <div class="chart-box">
+        <select id="fTipoCusto" class="inline-select" style="position:absolute;right:0;top:-4px;"></select>
+        <canvas id="chartCustosTransp"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><span class="dot" style="--accent:var(--violet)"></span>Ressarcimentos</div>
+    </div>
+    <p class="panel-desc">Solicitações de reembolso por status, transportadora e motivo</p>
+
+    <div class="mini-donut">
+      <div class="mini-donut-label">Por status</div>
+      <div class="mini-donut-canvas-wrap"><canvas id="chartRessStatus"></canvas></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box"><canvas id="chartRessTransp"></canvas></div>
+      <div class="chart-box"><canvas id="chartRessMotivo"></canvas></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><span class="dot" style="--accent:var(--amber)"></span>Acumulado</div>
+    </div>
+    <p class="panel-desc">Evolução acumulada de frete transportadora, frete cliente e faturado no período</p>
+    <div class="chart-box tall"><canvas id="chartAcumulado"></canvas></div>
+  </section>
+
+  <footer>
+    Importe novos meses com "Importar Excel" (abas Base e RESSARCIMENTO) · dados salvos no Firestore quando configurado, ou neste navegador
+  </footer>
+
+</div>
+
+<div id="toast-wrap"></div>
+
+<!-- ordem importa: config → dados de exemplo → lógica do app -->
+<script>
+// Configuração do Firebase — preencha com as credenciais do projeto
+// (Console do Firebase > Configurações do projeto > Seus apps > SDK setup and configuration)
+//
+// Enquanto os valores abaixo permanecerem como estão (começando com "SUA_"),
+// o app roda apenas com localStorage (dados salvos só neste navegador).
+// Ao preencher com as credenciais reais, o app passa a salvar/ler os dados
+// direto no Firestore automaticamente — não precisa mexer no script.js.
+//
+// Se este projeto já usa o mesmo Firebase do TBX Hub / Container Management,
+// pode copiar o mesmo objeto de configuração usado lá.
+
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO",
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
+
+
+// Dados de exemplo (snapshot inicial extraido de INDICADORES_DE_FATURAS_v13.xlsx)
+// Usados apenas se nao houver dados salvos no Firestore/localStorage ainda.
+const SEED_BASE = [{"Transportadora": "Jadlog", "Mês/Ano": "2026-01-01", "$ Transportadora": 14269.52, "$ Cliente": 12394.490000000002, "Faturado": -1875.0299999999988, "Reentrega": 0, "Devolução": 0, "Peças": -1316.9899999999998, "Frete Grátis": 0, "Reposição": -1288.5899999999997}, {"Transportadora": "BNRV", "Mês/Ano": "2026-01-01", "$ Transportadora": 359023.26999999856, "$ Cliente": 375961.40999999945, "Faturado": 16938.140000000887, "Reentrega": -1063.15, "Devolução": -6975.690000000003, "Peças": 0, "Frete Grátis": 0, "Reposição": -5686.719999999998}, {"Transportadora": "Transoliveira", "Mês/Ano": "2026-01-01", "$ Transportadora": 416863.280000003, "$ Cliente": 439179.890000006, "Faturado": 22316.610000003, "Reentrega": -3497.88, "Devolução": -5808.339999999999, "Peças": 0, "Frete Grátis": 0, "Reposição": -3385.2900000000004}, {"Transportadora": "Mindlog", "Mês/Ano": "2026-01-01", "$ Transportadora": 514810.81000000396, "$ Cliente": 531586.2399999986, "Faturado": 16775.429999994638, "Reentrega": -2420.9, "Devolução": -19635.270000000008, "Peças": 0, "Frete Grátis": 0, "Reposição": -10359.239999999998}, {"Transportadora": "Arlete", "Mês/Ano": "2026-01-01", "$ Transportadora": 121815.18000000004, "$ Cliente": 141242.07999999996, "Faturado": 19426.89999999992, "Reentrega": -1315.31, "Devolução": -1935.2299999999998, "Peças": 0, "Frete Grátis": 0, "Reposição": -2996.3700000000003}, {"Transportadora": "Braspress", "Mês/Ano": "2026-01-01", "$ Transportadora": 948.7399999999998, "$ Cliente": 0, "Faturado": -948.7399999999998, "Reentrega": 0, "Devolução": -948.7399999999998, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "ON TIME", "Mês/Ano": "2026-01-01", "$ Transportadora": 23996.549999999967, "$ Cliente": 25802.190000000024, "Faturado": 1805.6400000000576, "Reentrega": 0, "Devolução": -246.56, "Peças": 0, "Frete Grátis": 0, "Reposição": -189.34}, {"Transportadora": "OCT", "Mês/Ano": "2026-01-01", "$ Transportadora": 44702.86999999999, "$ Cliente": 48584.679999999964, "Faturado": 3881.809999999976, "Reentrega": 0, "Devolução": -419.21000000000004, "Peças": 0, "Frete Grátis": 0, "Reposição": -181.45}, {"Transportadora": "Logdi", "Mês/Ano": "2026-01-01", "$ Transportadora": 69227.35, "$ Cliente": 75265.29, "Faturado": 6037.939999999988, "Reentrega": -196.12, "Devolução": -2571.84, "Peças": 0, "Frete Grátis": 0, "Reposição": -1200.79}, {"Transportadora": "Rodoviasul", "Mês/Ano": "2026-01-01", "$ Transportadora": 50437.88, "$ Cliente": 57690.54999999999, "Faturado": 7252.669999999991, "Reentrega": 0, "Devolução": -489.71, "Peças": 0, "Frete Grátis": 0, "Reposição": -1923.5000000000005}, {"Transportadora": "Flyville", "Mês/Ano": "2026-01-01", "$ Transportadora": 131387.08999999994, "$ Cliente": 133882.5, "Faturado": 2495.4100000000617, "Reentrega": -477.0899999999999, "Devolução": -3527.46, "Peças": 0, "Frete Grátis": 0, "Reposição": -2289.19}, {"Transportadora": "Jadlog", "Mês/Ano": "2026-02-01", "$ Transportadora": 30591.66, "$ Cliente": 25339.619999999988, "Faturado": -5252.040000000012, "Reentrega": 0, "Devolução": -23.92, "Peças": -5431.170000000002, "Frete Grátis": 0, "Reposição": -1653.15}, {"Transportadora": "BNRV", "Mês/Ano": "2026-02-01", "$ Transportadora": 493020.9399999996, "$ Cliente": 486466.4899999998, "Faturado": -6554.449999999779, "Reentrega": -1794.1700000000003, "Devolução": -6607.2300000000005, "Peças": 0, "Frete Grátis": 0, "Reposição": -5672.129999999999}, {"Transportadora": "Transoliveira", "Mês/Ano": "2026-02-01", "$ Transportadora": 552276.520000001, "$ Cliente": 570852.9800000013, "Faturado": 18576.460000000312, "Reentrega": -3359.4399999999996, "Devolução": -8114.469999999996, "Peças": 0, "Frete Grátis": 0, "Reposição": -2984.75}, {"Transportadora": "Mindlog", "Mês/Ano": "2026-02-01", "$ Transportadora": 688840.4200000055, "$ Cliente": 704152.0200000057, "Faturado": 15311.60000000021, "Reentrega": -909.3399999999999, "Devolução": -20717.830000000005, "Peças": 0, "Frete Grátis": 0, "Reposição": -5753.53}, {"Transportadora": "Arlete", "Mês/Ano": "2026-02-01", "$ Transportadora": 229787.4600000003, "$ Cliente": 249396.77999999994, "Faturado": 19609.31999999963, "Reentrega": -3357.8099999999995, "Devolução": -4104.42, "Peças": 0, "Frete Grátis": 0, "Reposição": -6283.960000000001}, {"Transportadora": "Braspress", "Mês/Ano": "2026-02-01", "$ Transportadora": 1157.97, "$ Cliente": 0, "Faturado": -1157.97, "Reentrega": 0, "Devolução": -1157.97, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "ON TIME", "Mês/Ano": "2026-02-01", "$ Transportadora": 10456.789999999988, "$ Cliente": 9836.830000000004, "Faturado": -619.9599999999846, "Reentrega": 0, "Devolução": -66.16, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "OCT", "Mês/Ano": "2026-02-01", "$ Transportadora": 60513.37000000004, "$ Cliente": 63806.700000000026, "Faturado": 3293.329999999987, "Reentrega": 0, "Devolução": 0, "Peças": 0, "Frete Grátis": 0, "Reposição": -599.7199999999999}, {"Transportadora": "Logdi", "Mês/Ano": "2026-02-01", "$ Transportadora": 112934.19999999997, "$ Cliente": 114302.12000000005, "Faturado": 1367.9200000000856, "Reentrega": -139.58, "Devolução": -3455.58, "Peças": 0, "Frete Grátis": 0, "Reposição": -1568.8700000000001}, {"Transportadora": "Rodoviasul", "Mês/Ano": "2026-02-01", "$ Transportadora": 95499.71999999996, "$ Cliente": 108488.64000000009, "Faturado": 12988.92000000013, "Reentrega": 0, "Devolução": -2538.4399999999996, "Peças": 0, "Frete Grátis": 0, "Reposição": -2302.01}, {"Transportadora": "Flyville", "Mês/Ano": "2026-02-01", "$ Transportadora": 440932.26000000024, "$ Cliente": 460483.78999999934, "Faturado": 19551.529999999097, "Reentrega": -486.72, "Devolução": -7285.54, "Peças": 0, "Frete Grátis": 0, "Reposição": -3275.57}, {"Transportadora": "Jadlog", "Mês/Ano": "2026-03-01", "$ Transportadora": 45949.16999999995, "$ Cliente": 42316.08999999999, "Faturado": -3633.079999999958, "Reentrega": 0, "Devolução": 0, "Peças": -4180.85, "Frete Grátis": -112.65, "Reposição": -1599.6899999999998}, {"Transportadora": "BNRV", "Mês/Ano": "2026-03-01", "$ Transportadora": 553951.9300000002, "$ Cliente": 519240.71999999916, "Faturado": -34711.21000000101, "Reentrega": -1744.39, "Devolução": -10231.6, "Peças": 0, "Frete Grátis": 0, "Reposição": -2333.8500000000004}, {"Transportadora": "Transoliveira", "Mês/Ano": "2026-03-01", "$ Transportadora": 481569.4200000007, "$ Cliente": 505125.10000000213, "Faturado": 23555.68000000145, "Reentrega": -6299.920000000002, "Devolução": -8158.279999999996, "Peças": 0, "Frete Grátis": 0, "Reposição": -728.6999999999998}, {"Transportadora": "Mindlog", "Mês/Ano": "2026-03-01", "$ Transportadora": 602042.6799999988, "$ Cliente": 607155.9600000064, "Faturado": 5113.280000007595, "Reentrega": -411.11, "Devolução": -21043.229999999992, "Peças": 0, "Frete Grátis": 0, "Reposição": -3188.4699999999993}, {"Transportadora": "Arlete", "Mês/Ano": "2026-03-01", "$ Transportadora": 177104.9800000009, "$ Cliente": 195229.31000000067, "Faturado": 18124.329999999754, "Reentrega": -3755.759999999999, "Devolução": -4883.709999999999, "Peças": 0, "Frete Grátis": 0, "Reposição": -7398.370000000002}, {"Transportadora": "Braspress", "Mês/Ano": "2026-03-01", "$ Transportadora": 344.13, "$ Cliente": 0, "Faturado": -344.13, "Reentrega": 0, "Devolução": -344.13, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "WML", "Mês/Ano": "2026-03-01", "$ Transportadora": 28432.510000000028, "$ Cliente": 32251.939999999984, "Faturado": 3819.4299999999566, "Reentrega": -95.05, "Devolução": -184.36, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "OCT", "Mês/Ano": "2026-03-01", "$ Transportadora": 46380.94000000007, "$ Cliente": 50437.630000000034, "Faturado": 4056.689999999966, "Reentrega": 0, "Devolução": -329.37, "Peças": 0, "Frete Grátis": 0, "Reposição": 0}, {"Transportadora": "Logdi", "Mês/Ano": "2026-03-01", "$ Transportadora": 174916.55, "$ Cliente": 178588.64000000022, "Faturado": 3672.0900000002293, "Reentrega": -218.61, "Devolução": -3157.4700000000003, "Peças": 0, "Frete Grátis": 0, "Reposição": -514.66}, {"Transportadora": "Rodoviasul", "Mês/Ano": "2026-03-01", "$ Transportadora": 128522.11999999994, "$ Cliente": 140187.78000000023, "Faturado": 11665.660000000295, "Reentrega": -151.93, "Devolução": -2526.75, "Peças": 0, "Frete Grátis": 0, "Reposição": -978.32}, {"Transportadora": "Flyville", "Mês/Ano": "2026-03-01", "$ Transportadora": 425800.83000000013, "$ Cliente": 444457.17999999947, "Faturado": 18656.349999999336, "Reentrega": -1153.9599999999998, "Devolução": -5482.61, "Peças": 0, "Frete Grátis": 0, "Reposição": -480.91999999999996}, {"Transportadora": "Log Tempo", "Mês/Ano": "2026-03-01", "$ Transportadora": 103526.06000000029, "$ Cliente": 116039.3600000005, "Faturado": 12513.300000000207, "Reentrega": -1989.2499999999998, "Devolução": -1014.79, "Peças": 0, "Frete Grátis": 0, "Reposição": -199.32}, {"Transportadora": "Jadlog", "Mês/Ano": "2026-04-01", "$ Transportadora": 22856.390000000018, "$ Cliente": 22526.719999999976, "Faturado": -329.6700000000419, "Reentrega": 0, "Devolução": 0, "Peças": -2005.2400000000007, "Frete Grátis": 0, "Reposição": -52.33}, {"Transportadora": "BNRV", "Mês/Ano": "2026-04-01", "$ Transportadora": 326354.18000000017, "$ Cliente": 364042.2200000001, "Faturado": 37688.03999999992, "Reentrega": -1326.8000000000002, "Devolução": -8675.420000000002, "Peças": 0, "Frete Grátis": 0, "Reposição": -7129.780000000001}, {"Transportadora": "Transoliveira", "Mês/Ano": "2026-04-01", "$ Transportadora": 426312.2999999981, "$ Cliente": 483300.6200000008, "Faturado": 56988.320000002685, "Reentrega": -2535.9499999999994, "Devolução": -7774.019999999999, "Peças": 0, "Frete Grátis": 0, "Reposição": -4485.539999999999}, {"Transportadora": "Mindlog", "Mês/Ano": "2026-04-01", "$ Transportadora": 779729.3899999928, "$ Cliente": 786998.4100000175, "Faturado": 7269.020000024699, "Reentrega": -188.64, "Devolução": -26087.52000000001, "Peças": 0, "Frete Grátis": 0, "Reposição": -12111.409999999998}, {"Transportadora": "Arlete", "Mês/Ano": "2026-04-01", "$ Transportadora": 146222.7299999998, "$ Cliente": 157084.87000000037, "Faturado": 10862.140000000567, "Reentrega": -1406.6500000000003, "Devolução": -3685.53, "Peças": 0, "Frete Grátis": 0, "Reposição": -4740.8200000000015}, {"Transportadora": "WML", "Mês/Ano": "2026-04-01", "$ Transportadora": 23154.57999999997, "$ Cliente": 31804.47999999999, "Faturado": 8649.90000000002, "Reentrega": -334.8900000000001, "Devolução": 0, "Peças": 0, "Frete Grátis": 0, "Reposição": -125.94}, {"Transportadora": "OCT", "Mês/Ano": "2026-04-01", "$ Transportadora": 47190.11999999998, "$ Cliente": 50793.56999999997, "Faturado": 3603.44999999999, "Reentrega": 0, "Devolução": 0, "Peças": 0, "Frete Grátis": 0, "Reposição": -441.45}, {"Transportadora": "Logdi", "Mês/Ano": "2026-04-01", "$ Transportadora": 133901.91000000003, "$ Cliente": 131699.45999999982, "Faturado": -2202.4500000002154, "Reentrega": -274.41, "Devolução": -2473.8999999999996, "Peças": 0, "Frete Grátis": 0, "Reposição": -1436.9899999999998}, {"Transportadora": "Rodoviasul", "Mês/Ano": "2026-04-01", "$ Transportadora": 99723.72000000006, "$ Cliente": 100834.44999999991, "Faturado": 1110.7299999998504, "Reentrega": 0, "Devolução": -1732.1200000000003, "Peças": 0, "Frete Grátis": 0, "Reposição": -2176.17}, {"Transportadora": "Flyville", "Mês/Ano": "2026-04-01", "$ Transportadora": 367862.73000000045, "$ Cliente": 373117.1799999991, "Faturado": 5254.449999998673, "Reentrega": -758.77, "Devolução": -7561.899999999998, "Peças": 0, "Frete Grátis": 0, "Reposição": -5390.339999999999}, {"Transportadora": "Log Tempo", "Mês/Ano": "2026-04-01", "$ Transportadora": 140505.86000000007, "$ Cliente": 151701.46999999948, "Faturado": 11195.609999999404, "Reentrega": -3610.049999999999, "Devolução": -3811.2599999999998, "Peças": 0, "Frete Grátis": 0, "Reposição": -1515.8599999999997}, {"Transportadora": "Jadlog", "Mês/Ano": "2026-05-01", "$ Transportadora": 44634.31999999997, "$ Cliente": 42686.36999999995, "Faturado": -1947.950000000019, "Reentrega": 0, "Devolução": 0, "Peças": -3062.8299999999995, "Frete Grátis": -324.16999999999996, "Reposição": -265.57}, {"Transportadora": "BNRV", "Mês/Ano": "2026-05-01", "$ Transportadora": 482773.01000000146, "$ Cliente": 608917.5400000002, "Faturado": 126144.52999999869, "Reentrega": -2787.9800000000005, "Devolução": -7157.750000000001, "Peças": 0, "Frete Grátis": 0, "Reposição": -4203.8099999999995}, {"Transportadora": "Transoliveira", "Mês/Ano": "2026-05-01", "$ Transportadora": 503197.0500000015, "$ Cliente": 582199.5599999999, "Faturado": 79002.50999999844, "Reentrega": -6467.160000000002, "Devolução": -6344.539999999996, "Peças": 0, "Frete Grátis": -480.21, "Reposição": -2963.83}, {"Transportadora": "Mindlog", "Mês/Ano": "2026-05-01", "$ Transportadora": 869050.5799999955, "$ Cliente": 895815.7600000118, "Faturado": 26765.180000016233, "Reentrega": -1505.61, "Devolução": -13514.080000000002, "Peças": 0, "Frete Grátis": -8823.7, "Reposição": -8355.960000000003}, {"Transportadora": "Arlete", "Mês/Ano": "2026-05-01", "$ Transportadora": 191184.21000000043, "$ Cliente": 169207.87000000023, "Faturado": -21976.3400000002, "Reentrega": -4832.219999999999, "Devolução": -3167.4400000000005, "Peças": 0, "Frete Grátis": 0, "Reposição": -3223.6599999999994}, {"Transportadora": "OCT", "Mês/Ano": "2026-05-01", "$ Transportadora": 44314.250000000015, "$ Cliente": 48443.729999999974, "Faturado": 4129.47999999996, "Reentrega": 0, "Devolução": 0, "Peças": 0, "Frete Grátis": 0, "Reposição": -145.75}, {"Transportadora": "Logdi", "Mês/Ano": "2026-05-01", "$ Transportadora": 156690.68, "$ Cliente": 153784.56999999995, "Faturado": -2906.1100000000442, "Reentrega": -174.67, "Devolução": -5602.300000000001, "Peças": 0, "Frete Grátis": -333.02, "Reposição": -4080.1099999999997}, {"Transportadora": "Rodoviasul", "Mês/Ano": "2026-05-01", "$ Transportadora": 108203.25999999998, "$ Cliente": 122938.31000000003, "Faturado": 14735.050000000047, "Reentrega": 0, "Devolução": -1202.77, "Peças": 0, "Frete Grátis": 0, "Reposição": -1358.7}, {"Transportadora": "Flyville", "Mês/Ano": "2026-05-01", "$ Transportadora": 467368.4300000008, "$ Cliente": 526653.9299999988, "Faturado": 59285.49999999796, "Reentrega": -908.1300000000001, "Devolução": -8832.509999999998, "Peças": 0, "Frete Grátis": 0, "Reposição": -4858.22}, {"Transportadora": "Log Tempo", "Mês/Ano": "2026-05-01", "$ Transportadora": 193713.0999999993, "$ Cliente": 214055.95999999964, "Faturado": 20342.860000000335, "Reentrega": -4567.400000000001, "Devolução": -2897.85, "Peças": 0, "Frete Grátis": 0, "Reposição": -2540.9000000000005}];
+const SEED_RESS = [{"Nota fiscal": 821756, "Transportadora": "Mindlog", "Mês": "Janeiro", "data": "2026-02-27", "Valor cobrado": 157.84, "Valor real": 100.15, "Reembolso": 57.69, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 824478, "Transportadora": "Mindlog", "Mês": "Janeiro", "data": "2026-02-27", "Valor cobrado": 814.83, "Valor real": 453.8, "Reembolso": 361.03000000000003, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 830608, "Transportadora": "Mindlog", "Mês": "Janeiro", "data": "2026-03-02", "Valor cobrado": 193.84, "Valor real": 147.33, "Reembolso": 46.50999999999999, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 825915, "Transportadora": "OCT", "Mês": "Janeiro", "data": "2026-03-02", "Valor cobrado": 208.06, "Valor real": 212.21, "Reembolso": 4.15, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 825647, "Transportadora": "OCT", "Mês": "Janeiro", "data": "2026-03-02", "Valor cobrado": 212.18, "Valor real": 148.53, "Reembolso": 63.650000000000006, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 822384, "Transportadora": "OCT", "Mês": "Janeiro", "data": "2026-03-03", "Valor cobrado": 328.71, "Valor real": 255.74, "Reembolso": 72.96999999999997, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 825029, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-03", "Valor cobrado": 344.97, "Valor real": 316.32, "Reembolso": 28.650000000000034, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 824776, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-03", "Valor cobrado": 325.22, "Valor real": 355.85, "Reembolso": 30.63, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 826473, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-03", "Valor cobrado": 351.39, "Valor real": 301.63, "Reembolso": 49.75999999999999, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 827220, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-03", "Valor cobrado": 517.62, "Valor real": 488.45, "Reembolso": 29.170000000000016, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 827770, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 302.43, "Valor real": 273.91, "Reembolso": 28.519999999999982, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 827781, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 222.98, "Valor real": 232.42, "Reembolso": 9.44, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 827929, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 304.41, "Valor real": 275.88, "Reembolso": 28.53000000000003, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 828454, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 344.97, "Valor real": 316.32, "Reembolso": 28.650000000000034, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 830787, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 344.97, "Valor real": 316.32, "Reembolso": 28.650000000000034, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 831780, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 345.99, "Valor real": 296.71, "Reembolso": 49.28000000000003, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 833388, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 323.47, "Valor real": 276.12, "Reembolso": 47.35000000000002, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 833252, "Transportadora": "BNRV", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 877.02, "Valor real": 810.73, "Reembolso": 66.28999999999996, "Status": "Pago", "Problema": "Erro de Abrangência"}, {"Nota fiscal": 825115, "Transportadora": "Logdi", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 318.97, "Valor real": 274.89, "Reembolso": 44.08000000000004, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 827060, "Transportadora": "Logdi", "Mês": "Janeiro", "data": "2026-03-04", "Valor cobrado": 626.97, "Valor real": 429.37, "Reembolso": 197.60000000000002, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829407, "Transportadora": "Logdi", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 376.48, "Valor real": 375.95, "Reembolso": 0.5300000000000296, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 823933, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 490.35, "Valor real": 319.42, "Reembolso": 170.93, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 823970, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 271.26, "Valor real": 219.06, "Reembolso": 52.19999999999999, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 823862, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 271.19, "Valor real": 218.99, "Reembolso": 52.19999999999999, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 823870, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 271.19, "Valor real": 218.99, "Reembolso": 52.19999999999999, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 824105, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-05", "Valor cobrado": 308.67, "Valor real": 263.94, "Reembolso": 44.73000000000002, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829456, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 473.84, "Valor real": 187.33, "Reembolso": 286.51, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 828512, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 295.26, "Valor real": 252.59, "Reembolso": 42.66999999999999, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 830572, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 308.99, "Valor real": 252.53, "Reembolso": 56.46000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 830596, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 250.4, "Valor real": 197.22, "Reembolso": 53.18000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829269, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 463.62, "Valor real": 311.41, "Reembolso": 152.20999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829359, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 270.86, "Valor real": 218.64, "Reembolso": 52.22000000000003, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829636, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 234.77, "Valor real": 197.22, "Reembolso": 37.55000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 829800, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 248.11, "Valor real": 197.2, "Reembolso": 50.910000000000025, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 832229, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 308.67, "Valor real": 263.94, "Reembolso": 44.73000000000002, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 832051, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 270.81, "Valor real": 218.59, "Reembolso": 52.22, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 832109, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 270.86, "Valor real": 218.64, "Reembolso": 52.22000000000003, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 832497, "Transportadora": "Transoliveira", "Mês": "Janeiro", "data": "2026-03-06", "Valor cobrado": 234.77, "Valor real": 197.22, "Reembolso": 37.55000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 835578, "Transportadora": "Arlete", "Mês": "Fevereiro", "data": "2025-03-13", "Valor cobrado": 159.58, "Valor real": 109.58000000000001, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 836019, "Transportadora": "Arlete", "Mês": "Fevereiro", "data": "2025-03-13", "Valor cobrado": 381.93, "Valor real": 355.88, "Reembolso": 26.05000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 837365, "Transportadora": "Arlete", "Mês": "Fevereiro", "data": "2025-03-13", "Valor cobrado": 565.83, "Valor real": 355.88, "Reembolso": 300, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 850474, "Transportadora": "Arlete", "Mês": "Fevereiro", "data": "2025-03-18", "Valor cobrado": 199.06, "Valor real": 355.88, "Reembolso": 60, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 849535, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-18", "Valor cobrado": 1378.32, "Valor real": 1105.77, "Reembolso": 272.54999999999995, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 835806, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 324.88, "Valor real": 292.81, "Reembolso": 32.06999999999999, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 836444, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 270.76, "Valor real": 251.85, "Reembolso": 18.909999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 836544, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 323.16, "Valor real": 275.84, "Reembolso": 47.32000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 838491, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 323.16, "Valor real": 275.84, "Reembolso": 47.32000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 838794, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 271.15, "Valor real": 233.33, "Reembolso": 37.819999999999965, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 839482, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 667.04, "Valor real": 637.4, "Reembolso": 29.639999999999986, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 839802, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 527.46, "Valor real": 498.26, "Reembolso": 29.200000000000045, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 840550, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 344.9, "Valor real": 316.58, "Reembolso": 28.319999999999993, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 843852, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 271.15, "Valor real": 239.33, "Reembolso": 31.819999999999965, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 844063, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 270.25, "Valor real": 243.96, "Reembolso": 26.289999999999992, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 845034, "Transportadora": "BNRV", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 525.61, "Valor real": 452.77, "Reembolso": 72.84000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 840287, "Transportadora": "OCT", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 1655.91, "Valor real": 159.2, "Reembolso": 1496.71, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 832130, "Transportadora": "Logdi", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 966.39, "Valor real": 639.23, "Reembolso": 327.15999999999997, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 833262, "Transportadora": "Logdi", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 595.91, "Valor real": 384.76, "Reembolso": 211.14999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 839850, "Transportadora": "Logdi", "Mês": "Fevereiro", "data": "2025-03-19", "Valor cobrado": 623.72, "Valor real": 437.04, "Reembolso": 186.68, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 852673, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 321.42, "Valor real": 269.8, "Reembolso": 51.620000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851213, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 341.38, "Valor real": 286.29, "Reembolso": 55.089999999999975, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851294, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 257, "Valor real": 207.25, "Reembolso": 49.75, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853119, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 245.5, "Valor real": 195.5, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851216, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 245.6, "Valor real": 195.6, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852900, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 245.6, "Valor real": 195.6, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852891, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 247.85, "Valor real": 197.85, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853500, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 247.99, "Valor real": 197.99, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851808, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 229.83, "Valor real": 179.83, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853198, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 229.97, "Valor real": 179.97, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853391, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 257, "Valor real": 197, "Reembolso": 60, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851624, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 269.68, "Valor real": 219.68, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851300, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 563.78, "Valor real": 489.57, "Reembolso": 74.20999999999998, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851761, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-12", "Valor cobrado": 376.47, "Valor real": 326.47, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852839, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 419.98, "Valor real": 319.98, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851417, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 303.77, "Valor real": 223.77, "Reembolso": 79.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851992, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 290.4, "Valor real": 190.4, "Reembolso": 99.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852519, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 281.53, "Valor real": 181.53, "Reembolso": 99.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851883, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 282.07, "Valor real": 182.07, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852548, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 282.07, "Valor real": 182.07, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852376, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.2, "Valor real": 128.2, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853140, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.2, "Valor real": 128.2, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853055, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.24, "Valor real": 128.24, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851922, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.59, "Valor real": 195.59, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853886, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 361.03, "Valor real": 311.03, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855158, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 412.05, "Valor real": 382.05, "Reembolso": 30, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855209, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.57, "Valor real": 195.57, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854741, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.57, "Valor real": 195.57, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854980, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.61, "Valor real": 195.61, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854720, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 244.09, "Valor real": 194.09, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853765, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 229.97, "Valor real": 179.97, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853944, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 206.94, "Valor real": 176.94, "Reembolso": 30, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854917, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 647.69, "Valor real": 597.69, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854587, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 296.2, "Valor real": 216.2, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854080, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 279.73, "Valor real": 199.73, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854476, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 286.11, "Valor real": 206.11, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854822, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 295.75, "Valor real": 215.75, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854531, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 410.41, "Valor real": 330.41, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854982, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.17, "Valor real": 128.17, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854090, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.48, "Valor real": 128.48, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862069, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 327.18, "Valor real": 297.18, "Reembolso": 30, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857558, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 279.45, "Valor real": 229.45, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858809, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 260.92, "Valor real": 210.92, "Reembolso": 50.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861898, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 290.16, "Valor real": 240.16, "Reembolso": 50.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861320, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 271.01, "Valor real": 221.01, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859036, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 269.59, "Valor real": 219.59, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858506, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 280.24, "Valor real": 230.24, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859080, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.39, "Valor real": 195.39, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857782, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.61, "Valor real": 195.61, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858409, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.61, "Valor real": 195.61, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858995, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.61, "Valor real": 195.61, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 860810, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.74, "Valor real": 195.74, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861543, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 245.77, "Valor real": 195.77, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857811, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 261.51, "Valor real": 211.51, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859533, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 229.8, "Valor real": 179.8, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 860339, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 229.8, "Valor real": 179.8, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858224, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 229.97, "Valor real": 179.97, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861576, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 230.51, "Valor real": 180.51, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858441, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 258.75, "Valor real": 198.75, "Reembolso": 60, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861991, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862186, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859276, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 434.77, "Valor real": 384.77, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859056, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 431.89, "Valor real": 351.89, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858011, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 404.94, "Valor real": 324.94, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858136, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 279.66, "Valor real": 199.66, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861537, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 295.72, "Valor real": 215.72, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859391, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 264.09, "Valor real": 184.09, "Reembolso": 79.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861538, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 264.74, "Valor real": 184.74, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858599, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 264.95, "Valor real": 184.95, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 860778, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 506.2, "Valor real": 406.2, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859216, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 305.01, "Valor real": 225.01, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861463, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 305.1, "Valor real": 225.1, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861437, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 305.1, "Valor real": 225.1, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857479, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 499.26, "Valor real": 399.26, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862379, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 646.81, "Valor real": 566.81, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859844, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 337.06, "Valor real": 237.06, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861641, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 336.59, "Valor real": 236.59, "Reembolso": 99.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 858078, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.17, "Valor real": 128.17, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 861780, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 228.24, "Valor real": 128.24, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857310, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 315.15, "Valor real": 215.15, "Reembolso": 99.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857816, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 291.8, "Valor real": 191.8, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862027, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-13", "Valor cobrado": 290.35, "Valor real": 190.35, "Reembolso": 100.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852430, "Transportadora": "BNRV", "Mês": "Março", "data": "2026-03-16", "Valor cobrado": 738.46, "Valor real": 541.97, "Reembolso": 196.49, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859304, "Transportadora": "Logdi", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 579.76, "Valor real": 563.31, "Reembolso": 16.450000000000045, "Status": "Pendente", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851642, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 159.14, "Valor real": 109.14, "Reembolso": 49.999999999999986, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851116, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 199.27, "Valor real": 139.27, "Reembolso": 60, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852966, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 200.35, "Valor real": 140.65, "Reembolso": 59.69999999999999, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854011, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 159.25, "Valor real": 109.25, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855056, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 159.22, "Valor real": 109.22, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855886, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 108.58, "Valor real": 58.58, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859330, "Transportadora": "Arlete", "Mês": "Março", "data": "2026-03-18", "Valor cobrado": 235.93, "Valor real": 190.93, "Reembolso": 45, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 849402, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 270.82, "Valor real": 163.54, "Reembolso": 107.28, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 849767, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 521.56, "Valor real": 316.82, "Reembolso": 204.73999999999995, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 850374, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 248.28, "Valor real": 219.79, "Reembolso": 28.49000000000001, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851007, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 270.82, "Valor real": 219.7, "Reembolso": 51.120000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851722, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 270.82, "Valor real": 219.7, "Reembolso": 51.120000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 851958, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-19", "Valor cobrado": 270.82, "Valor real": 219.7, "Reembolso": 51.120000000000005, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853422, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 270.95, "Valor real": 218.85, "Reembolso": 52.099999999999994, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853812, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 270.82, "Valor real": 218.85, "Reembolso": 51.97, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853998, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 251.34, "Valor real": 197, "Reembolso": 54.34, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 853848, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 270.82, "Valor real": 218.6, "Reembolso": 52.22, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 854109, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 270.82, "Valor real": 218.6, "Reembolso": 52.22, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855253, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 489.83, "Valor real": 318.88, "Reembolso": 170.95, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 856051, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 266.77, "Valor real": 186.38, "Reembolso": 80.38999999999999, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855841, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 267.63, "Valor real": 218.5, "Reembolso": 49.129999999999995, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857416, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 250.19, "Valor real": 196.9, "Reembolso": 53.28999999999999, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857329, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 259.86, "Valor real": 196.94, "Reembolso": 62.920000000000016, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859696, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-20", "Valor cobrado": 492.38, "Valor real": 318.88, "Reembolso": 173.5, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 859912, "Transportadora": "WML", "Mês": "Março", "data": "2026-03-23", "Valor cobrado": 194.24, "Valor real": 135.87, "Reembolso": 58.370000000000005, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 861394, "Transportadora": "WML", "Mês": "Março", "data": "2026-03-23", "Valor cobrado": 381.03, "Valor real": 266.15, "Reembolso": 114.88, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 864406, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 257, "Valor real": 197, "Reembolso": 60, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 864390, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 345.85, "Valor real": 295.85, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862500, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862749, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862943, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862957, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863897, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 864376, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865651, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865754, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 290.08, "Valor real": 240.08, "Reembolso": 49.99999999999997, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 864498, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 271.01, "Valor real": 221.01, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865461, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 469.03, "Valor real": 419.03, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863478, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 207.58, "Valor real": 157.58, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863506, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 207.53, "Valor real": 157.53, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862327, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 489, "Valor real": 325.15, "Reembolso": 163.85000000000002, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 865627, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 555.43, "Valor real": 505.43, "Reembolso": 49.99999999999994, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863004, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 648, "Valor real": 598, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862418, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 451.27, "Valor real": 371.27, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865772, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 263.82, "Valor real": 183.82, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865686, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 263.91, "Valor real": 183.91, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862690, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 263.92, "Valor real": 183.92, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862725, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 263.92, "Valor real": 183.92, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865371, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 263.92, "Valor real": 183.92, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862806, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-24", "Valor cobrado": 264.13, "Valor real": 184.13, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862808, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 633.03, "Valor real": 553.03, "Reembolso": 80, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 865362, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 282.64, "Valor real": 182.64, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863212, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 228.17, "Valor real": 128.17, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 864013, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 228.2, "Valor real": 128.2, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863270, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 228.24, "Valor real": 128.24, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863772, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 228.24, "Valor real": 128.24, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 864366, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 229.06, "Valor real": 129.06, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862523, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 228.44, "Valor real": 127.44, "Reembolso": 101, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863021, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 290.35, "Valor real": 190.35, "Reembolso": 100.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862616, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 396.47, "Valor real": 346.47, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863888, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-25", "Valor cobrado": 427.61, "Valor real": 377.61, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 863915, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 799.08, "Valor real": 532.59, "Reembolso": 266.49, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 864767, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 489.81, "Valor real": 318.84, "Reembolso": 170.97000000000003, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 864563, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 411.84, "Valor real": 316.78, "Reembolso": 95.06, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 864868, "Transportadora": "Transoliveira", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 490.08, "Valor real": 319.13, "Reembolso": 170.95, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 855780, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 302.39, "Valor real": 202.39, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855826, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 280.98, "Valor real": 200.98, "Reembolso": 80.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855810, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 245.57, "Valor real": 195.57, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 855837, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 289.98, "Valor real": 239.98, "Reembolso": 50.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 856129, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 270.23, "Valor real": 220.23, "Reembolso": 50.00000000000003, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 856133, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 281.95, "Valor real": 181.95, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 856369, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 245.77, "Valor real": 195.77, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 856536, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 561.59, "Valor real": 481.59, "Reembolso": 80.00000000000006, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857105, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 229.8, "Valor real": 179.8, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857146, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 228.17, "Valor real": 128.17, "Reembolso": 100, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 857207, "Transportadora": "Mindlog", "Mês": "Março", "data": "2026-03-26", "Valor cobrado": 245.81, "Valor real": 195.81, "Reembolso": 50, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 852510, "Transportadora": "OCT", "Mês": "Março", "data": "2026-03-27", "Valor cobrado": 658.83, "Valor real": 608.12, "Reembolso": 104, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 862874, "Transportadora": "Logdi", "Mês": "Abril", "data": "2026-04-06", "Valor cobrado": 510.8, "Valor real": 386.86, "Reembolso": 123.94, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 868331, "Transportadora": "Mindlog", "Mês": "Abril", "data": "2026-04-06", "Valor cobrado": 569.34, "Valor real": 255.74, "Reembolso": 313.6, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 870099, "Transportadora": "OCT", "Mês": "Abril", "data": "2026-04-06", "Valor cobrado": 1300.28, "Valor real": 1214.08, "Reembolso": 86.20000000000005, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 872100, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 200.69, "Valor real": 146.26, "Reembolso": 54.43000000000001, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 873711, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 200.52, "Valor real": 146.26, "Reembolso": 54.26000000000002, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 870081, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 200.41, "Valor real": 0, "Reembolso": 200.41, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 866571, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 238.01, "Valor real": 197.1, "Reembolso": 40.91, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 869496, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 389.59, "Valor real": 289.92, "Reembolso": 99.66999999999996, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 869997, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 389.59, "Valor real": 289.92, "Reembolso": 99.66999999999996, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 869472, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 447.06, "Valor real": 291.98, "Reembolso": 155.07999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 869449, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 517.73, "Valor real": 330.28, "Reembolso": 187.45000000000005, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 870971, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-07", "Valor cobrado": 3108.66, "Valor real": 2967.99, "Reembolso": 140.67000000000007, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 873200, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 58.28, "Valor real": 0, "Reembolso": 58.28, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 870303, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 31.49, "Valor real": 0, "Reembolso": 31.49, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 871990, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 31.45, "Valor real": 0, "Reembolso": 31.45, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 870606, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 31.47, "Valor real": 0, "Reembolso": 31.47, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862483, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 58.26, "Valor real": 0, "Reembolso": 58.26, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862329, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 62.93, "Valor real": 0, "Reembolso": 62.93, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 862655, "Transportadora": "WML", "Mês": "Abril", "data": "2026-04-08", "Valor cobrado": 63.14, "Valor real": 0, "Reembolso": 63.14, "Status": "Pago", "Problema": "Erro de Taxas"}, {"Nota fiscal": 877812, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-16", "Valor cobrado": 1163.17, "Valor real": 738.03, "Reembolso": 425.1400000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 878055, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-16", "Valor cobrado": 365.46, "Valor real": 318.22, "Reembolso": 47.23999999999995, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 878910, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-16", "Valor cobrado": 627.43, "Valor real": 426.36, "Reembolso": 201.06999999999994, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 879596, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-16", "Valor cobrado": 514.49, "Valor real": 304.23, "Reembolso": 210.26, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 1022183, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-04-20", "Valor cobrado": 2307.4, "Valor real": 532.6, "Reembolso": 1774.8000000000002, "Status": "Pendente", "Problema": "Erro de cubagem"}, {"Nota fiscal": 876730, "Transportadora": "Mindlog", "Mês": "Abril", "data": "2026-04-23", "Valor cobrado": 445.97, "Valor real": 322.23, "Reembolso": 123.74000000000001, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 856929, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 144.97, "Valor real": 134.88, "Reembolso": 10.090000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875297, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.7, "Valor real": 160.68, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873844, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 304.29, "Valor real": 283.12, "Reembolso": 21.170000000000016, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874006, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.17, "Valor real": 208.58, "Reembolso": 15.589999999999975, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874011, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.79, "Valor real": 180.31, "Reembolso": 13.47999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874021, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.88, "Valor real": 261.34, "Reembolso": 19.54000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874051, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.64, "Valor real": 185.75, "Reembolso": 13.889999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874257, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.2, "Valor real": 185.35, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874329, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.51, "Valor real": 185.63, "Reembolso": 13.879999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874338, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.92, "Valor real": 185.08, "Reembolso": 13.839999999999975, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874458, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 95.55, "Valor real": 88.91, "Reembolso": 6.640000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874478, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.2, "Valor real": 185.35, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874516, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 246.26, "Valor real": 229.13, "Reembolso": 17.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874581, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.64, "Valor real": 185.75, "Reembolso": 13.889999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874621, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 202.91, "Valor real": 188.79, "Reembolso": 14.120000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874622, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.23, "Valor real": 179.79, "Reembolso": 13.439999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874655, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 388.04, "Valor real": 361.05, "Reembolso": 26.99000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874714, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.73, "Valor real": 160.71, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874800, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.03, "Valor real": 205.65, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874883, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.79, "Valor real": 160.77, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874901, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.35, "Valor real": 179.9, "Reembolso": 13.449999999999989, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874981, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.71, "Valor real": 185.82, "Reembolso": 13.890000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874532, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 213.76, "Valor real": 198.89, "Reembolso": 14.870000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875268, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 364.47, "Valor real": 339.12, "Reembolso": 25.350000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875273, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 121.87, "Valor real": 113.39, "Reembolso": 8.480000000000004, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875298, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.7, "Valor real": 160.68, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875358, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.35, "Valor real": 179.9, "Reembolso": 13.449999999999989, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875391, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.4, "Valor real": 207.86, "Reembolso": 15.539999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875421, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 282.24, "Valor real": 262.61, "Reembolso": 19.629999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873313, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.09, "Valor real": 185.24, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873087, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.82, "Valor real": 227.79, "Reembolso": 17.03, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873164, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.19, "Valor real": 207.67, "Reembolso": 15.52000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873268, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.14, "Valor real": 208.54, "Reembolso": 15.599999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873398, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.14, "Valor real": 208.54, "Reembolso": 15.599999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873462, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.74, "Valor real": 208.18, "Reembolso": 15.560000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873490, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.03, "Valor real": 205.65, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873834, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.62, "Valor real": 160.61, "Reembolso": 12.009999999999991, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873896, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.62, "Valor real": 160.61, "Reembolso": 12.009999999999991, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874073, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.71, "Valor real": 184.89, "Reembolso": 13.820000000000022, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874084, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.09, "Valor real": 185.24, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874390, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.71, "Valor real": 184.89, "Reembolso": 13.820000000000022, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874653, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.29, "Valor real": 160.31, "Reembolso": 11.97999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875494, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.2, "Valor real": 185.35, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875551, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.1, "Valor real": 205.72, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875554, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 277.74, "Valor real": 258.42, "Reembolso": 19.319999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875563, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.92, "Valor real": 227.88, "Reembolso": 17.039999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875572, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.1, "Valor real": 205.72, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874891, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 249.01, "Valor real": 231.69, "Reembolso": 17.319999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874685, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.7, "Valor real": 184.87, "Reembolso": 13.829999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874704, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.03, "Valor real": 205.65, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874748, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.29, "Valor real": 160.31, "Reembolso": 11.97999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 874828, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.62, "Valor real": 208.06, "Reembolso": 15.560000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875085, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.36, "Valor real": 207.83, "Reembolso": 15.530000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875259, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.09, "Valor real": 185.24, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875320, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.09, "Valor real": 185.24, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875586, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.2, "Valor real": 185.35, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875588, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.79, "Valor real": 160.77, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875647, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.94, "Valor real": 160.91, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875672, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.1, "Valor real": 205.72, "Reembolso": 15.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875682, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.88, "Valor real": 261.34, "Reembolso": 19.54000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875690, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.03, "Valor real": 208.45, "Reembolso": 15.580000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875718, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.17, "Valor real": 208.58, "Reembolso": 15.589999999999975, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875742, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.99, "Valor real": 160.96, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875747, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.92, "Valor real": 227.88, "Reembolso": 17.039999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875795, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 201.43, "Valor real": 187.42, "Reembolso": 14.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875827, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 317.85, "Valor real": 295.74, "Reembolso": 22.110000000000014, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875892, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.96, "Valor real": 186.05, "Reembolso": 13.909999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875921, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 247.74, "Valor real": 230.51, "Reembolso": 17.230000000000018, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875947, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 473.05, "Valor real": 440.14, "Reembolso": 32.910000000000025, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875953, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 343.67, "Valor real": 319.76, "Reembolso": 23.910000000000025, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875968, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.73, "Valor real": 160.71, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876022, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.22, "Valor real": 207.69, "Reembolso": 15.530000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875914, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 432.19, "Valor real": 402.13, "Reembolso": 30.060000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876021, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 226.33, "Valor real": 210.59, "Reembolso": 15.740000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876038, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 317.68, "Valor real": 295.58, "Reembolso": 22.100000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876104, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.63, "Valor real": 206.21, "Reembolso": 15.419999999999987, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876124, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.19, "Valor real": 207.67, "Reembolso": 15.52000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876245, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.53, "Valor real": 228.45, "Reembolso": 17.080000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875364, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 174.41, "Valor real": 162.28, "Reembolso": 12.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875368, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 225.1, "Valor real": 209.44, "Reembolso": 15.659999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876177, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 306.87, "Valor real": 285.52, "Reembolso": 21.350000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876288, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 228.93, "Valor real": 213, "Reembolso": 15.930000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876144, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.46, "Valor real": 206.05, "Reembolso": 15.409999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876338, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.86, "Valor real": 160.83, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876373, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.23, "Valor real": 179.79, "Reembolso": 13.439999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876374, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 279.02, "Valor real": 259.61, "Reembolso": 19.409999999999968, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876383, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.28, "Valor real": 205.89, "Reembolso": 15.390000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876506, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 173.27, "Valor real": 161.22, "Reembolso": 12.050000000000011, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876557, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.13, "Valor real": 185.28, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876670, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.22, "Valor real": 207.69, "Reembolso": 15.530000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876708, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.52, "Valor real": 180.06, "Reembolso": 13.460000000000008, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876728, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 334.03, "Valor real": 310.79, "Reembolso": 23.239999999999952, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876777, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.13, "Valor real": 185.28, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876974, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.81, "Valor real": 184.98, "Reembolso": 13.830000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876975, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.72, "Valor real": 160.7, "Reembolso": 12.02000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876976, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.87, "Valor real": 185.04, "Reembolso": 13.830000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877038, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.88, "Valor real": 160.85, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877263, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.29, "Valor real": 184.5, "Reembolso": 13.789999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877264, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.3, "Valor real": 160.32, "Reembolso": 11.980000000000018, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877272, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.33, "Valor real": 184.53, "Reembolso": 13.800000000000011, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877276, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.29, "Valor real": 184.5, "Reembolso": 13.789999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877455, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.99, "Valor real": 160.96, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877462, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.36, "Valor real": 186.43, "Reembolso": 13.930000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877474, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 188.01, "Valor real": 174.93, "Reembolso": 13.079999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877514, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.96, "Valor real": 208.38, "Reembolso": 15.580000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877558, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 173.63, "Valor real": 161.55, "Reembolso": 12.079999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877569, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.44, "Valor real": 228.37, "Reembolso": 17.069999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877572, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 120.7, "Valor real": 112.31, "Reembolso": 8.39, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877585, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.41, "Valor real": 208.8, "Reembolso": 15.609999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877609, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 122.59, "Valor real": 114.06, "Reembolso": 8.530000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877658, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 279.02, "Valor real": 259.61, "Reembolso": 19.409999999999968, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877660, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.47, "Valor real": 185.59, "Reembolso": 13.879999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877669, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 201.14, "Valor real": 187.14, "Reembolso": 14, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876431, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 317.72, "Valor real": 295.62, "Reembolso": 22.100000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877991, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 202.94, "Valor real": 188.82, "Reembolso": 14.120000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876494, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.61, "Valor real": 261.09, "Reembolso": 19.52000000000004, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878046, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.59, "Valor real": 208.04, "Reembolso": 15.550000000000011, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876657, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 121.9, "Valor real": 113.42, "Reembolso": 8.480000000000004, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876687, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 161.59, "Valor real": 150.35, "Reembolso": 11.240000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876848, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 122.21, "Valor real": 113.71, "Reembolso": 8.5, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877130, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 160.9, "Valor real": 149.7, "Reembolso": 11.200000000000017, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877363, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.85, "Valor real": 185.94, "Reembolso": 13.909999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877785, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 173.17, "Valor real": 161.12, "Reembolso": 12.049999999999983, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877831, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.28, "Valor real": 160.3, "Reembolso": 11.97999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877876, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 388.09, "Valor real": 361.09, "Reembolso": 27, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877880, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.25, "Valor real": 160.26, "Reembolso": 11.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 877982, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.41, "Valor real": 207.87, "Reembolso": 15.539999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876381, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 122.07, "Valor real": 113.58, "Reembolso": 8.489999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876543, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.36, "Valor real": 260.86, "Reembolso": 19.5, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876716, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 121.79, "Valor real": 113.31, "Reembolso": 8.480000000000004, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878116, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.59, "Valor real": 160.59, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878152, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 306.52, "Valor real": 285.2, "Reembolso": 21.319999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878201, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 243.63, "Valor real": 226.68, "Reembolso": 16.94999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878285, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.36, "Valor real": 160.37, "Reembolso": 11.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878333, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.9, "Valor real": 205.54, "Reembolso": 15.360000000000014, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878349, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 203.63, "Valor real": 189.46, "Reembolso": 14.169999999999987, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878464, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.56, "Valor real": 227.55, "Reembolso": 17.00999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878495, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.85, "Valor real": 185.01, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878519, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 362.09, "Valor real": 336.9, "Reembolso": 25.189999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878350, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.61, "Valor real": 184.79, "Reembolso": 13.820000000000022, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878552, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.12, "Valor real": 260.63, "Reembolso": 19.49000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878355, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.25, "Valor real": 160.26, "Reembolso": 11.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878395, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 341.87, "Valor real": 318.09, "Reembolso": 23.78000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878590, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.31, "Valor real": 185.44, "Reembolso": 13.870000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878591, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.31, "Valor real": 185.44, "Reembolso": 13.870000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878605, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.2, "Valor real": 205.81, "Reembolso": 15.389999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878607, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.44, "Valor real": 160.45, "Reembolso": 11.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878609, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.2, "Valor real": 205.81, "Reembolso": 15.389999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878678, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 240.26, "Valor real": 223.54, "Reembolso": 16.72, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878746, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.67, "Valor real": 185.78, "Reembolso": 13.889999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878764, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.59, "Valor real": 160.59, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878796, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.31, "Valor real": 185.44, "Reembolso": 13.870000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878830, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.23, "Valor real": 228.17, "Reembolso": 17.060000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878857, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 339.97, "Valor real": 316.32, "Reembolso": 23.650000000000034, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878868, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 192.66, "Valor real": 179.26, "Reembolso": 13.400000000000006, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 878904, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 257.27, "Valor real": 239.37, "Reembolso": 17.899999999999977, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879000, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.12, "Valor real": 228.07, "Reembolso": 17.05000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879023, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.96, "Valor real": 160.93, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879078, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 173.71, "Valor real": 161.62, "Reembolso": 12.090000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879085, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.55, "Valor real": 160.54, "Reembolso": 12.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879092, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.69, "Valor real": 205.33, "Reembolso": 15.359999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879173, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.09, "Valor real": 227.11, "Reembolso": 16.97999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879192, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 362.28, "Valor real": 337.08, "Reembolso": 25.19999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879195, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.79, "Valor real": 184.96, "Reembolso": 13.829999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879254, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.94, "Valor real": 185.1, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879258, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 204.04, "Valor real": 189.85, "Reembolso": 14.189999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879279, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.88, "Valor real": 160.85, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879315, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 773.73, "Valor real": 719.91, "Reembolso": 53.82000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879333, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.56, "Valor real": 186.61, "Reembolso": 13.949999999999989, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879349, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.52, "Valor real": 180.06, "Reembolso": 13.460000000000008, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879354, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.34, "Valor real": 207.8, "Reembolso": 15.539999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879386, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.92, "Valor real": 186.01, "Reembolso": 13.909999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879392, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.27, "Valor real": 185.41, "Reembolso": 13.860000000000014, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879396, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.59, "Valor real": 208.04, "Reembolso": 15.550000000000011, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879470, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.93, "Valor real": 160.9, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879577, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.82, "Valor real": 184.99, "Reembolso": 13.829999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879603, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879608, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 201.16, "Valor real": 187.16, "Reembolso": 14, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879624, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.72, "Valor real": 205.37, "Reembolso": 15.349999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879640, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879642, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.01, "Valor real": 208.43, "Reembolso": 15.579999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879644, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.45, "Valor real": 208.83, "Reembolso": 15.619999999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879648, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 136.91, "Valor real": 127.38, "Reembolso": 9.530000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879685, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.59, "Valor real": 184.78, "Reembolso": 13.810000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879691, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 279.74, "Valor real": 260.28, "Reembolso": 19.460000000000036, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879708, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879729, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.82, "Valor real": 184.99, "Reembolso": 13.829999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879761, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.12, "Valor real": 185.27, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879772, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.42, "Valor real": 207.88, "Reembolso": 15.539999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879818, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 203.88, "Valor real": 189.7, "Reembolso": 14.180000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879880, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879825, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 122.45, "Valor real": 113.93, "Reembolso": 8.519999999999996, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879908, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.56, "Valor real": 206.15, "Reembolso": 15.409999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879940, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.09, "Valor real": 208.5, "Reembolso": 15.590000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879946, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 340.84, "Valor real": 317.13, "Reembolso": 23.70999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879962, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 279.3, "Valor real": 259.87, "Reembolso": 19.430000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 879875, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.01, "Valor real": 227.96, "Reembolso": 17.049999999999983, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880050, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.12, "Valor real": 185.27, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880054, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880055, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 281.12, "Valor real": 261.56, "Reembolso": 19.560000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880062, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 521.64, "Valor real": 485.35, "Reembolso": 36.289999999999964, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880237, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.69, "Valor real": 205.33, "Reembolso": 15.359999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880247, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880285, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.72, "Valor real": 205.37, "Reembolso": 15.349999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880290, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 225.83, "Valor real": 210.12, "Reembolso": 15.710000000000008, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880298, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 187.54, "Valor real": 174.5, "Reembolso": 13.039999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880450, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.17, "Valor real": 260.68, "Reembolso": 19.49000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880480, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 192.35, "Valor real": 178.97, "Reembolso": 13.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880504, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 187.54, "Valor real": 174.5, "Reembolso": 13.039999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870639, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 161.21, "Valor real": 149.99, "Reembolso": 11.219999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870641, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.65, "Valor real": 160.64, "Reembolso": 12.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870716, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.05, "Valor real": 185.21, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870756, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.96, "Valor real": 206.52, "Reembolso": 15.439999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870817, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 222.72, "Valor real": 207.23, "Reembolso": 15.490000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870964, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 193.29, "Valor real": 179.85, "Reembolso": 13.439999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871096, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 248.7, "Valor real": 231.4, "Reembolso": 17.299999999999983, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871122, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 222.31, "Valor real": 206.84, "Reembolso": 15.469999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871155, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.57, "Valor real": 186.62, "Reembolso": 13.949999999999989, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871201, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 246.49, "Valor real": 229.34, "Reembolso": 17.150000000000006, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871363, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.99, "Valor real": 160.96, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871524, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 225.61, "Valor real": 209.91, "Reembolso": 15.700000000000017, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871547, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.15, "Valor real": 186.22, "Reembolso": 13.930000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870653, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 281.92, "Valor real": 262.31, "Reembolso": 19.610000000000014, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 870713, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.12, "Valor real": 208.53, "Reembolso": 15.590000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871836, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.82, "Valor real": 186.85, "Reembolso": 13.969999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871895, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.15, "Valor real": 186.22, "Reembolso": 13.930000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871949, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 246.17, "Valor real": 229.04, "Reembolso": 17.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871992, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.16, "Valor real": 228.1, "Reembolso": 17.060000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872125, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 201.11, "Valor real": 187.12, "Reembolso": 13.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872192, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 278.6, "Valor real": 259.22, "Reembolso": 19.379999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872280, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.88, "Valor real": 185.05, "Reembolso": 13.829999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872302, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 200.15, "Valor real": 186.22, "Reembolso": 13.930000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871910, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.58, "Valor real": 160.57, "Reembolso": 12.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872129, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.58, "Valor real": 160.57, "Reembolso": 12.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872132, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.74, "Valor real": 185.85, "Reembolso": 13.890000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872391, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 197.18, "Valor real": 183.46, "Reembolso": 13.719999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871015, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.74, "Valor real": 205.39, "Reembolso": 15.350000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871140, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 280.61, "Valor real": 261.09, "Reembolso": 19.52000000000004, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871277, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.82, "Valor real": 160.8, "Reembolso": 12.019999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871335, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.58, "Valor real": 160.57, "Reembolso": 12.01000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872552, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 122.13, "Valor real": 113.63, "Reembolso": 8.5, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872581, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.34, "Valor real": 205.94, "Reembolso": 15.400000000000006, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871354, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.66, "Valor real": 184.84, "Reembolso": 13.819999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871390, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244, "Valor real": 227.02, "Reembolso": 16.97999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871393, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 278.22, "Valor real": 258.87, "Reembolso": 19.350000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872617, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.09, "Valor real": 185.24, "Reembolso": 13.849999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872623, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.43, "Valor real": 228.36, "Reembolso": 17.069999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872626, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.16, "Valor real": 185.3, "Reembolso": 13.859999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871520, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.78, "Valor real": 227.75, "Reembolso": 17.03, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871701, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 281.09, "Valor real": 261.54, "Reembolso": 19.549999999999955, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872663, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.12, "Valor real": 208.53, "Reembolso": 15.590000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872677, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.74, "Valor real": 160.72, "Reembolso": 12.02000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871721, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.25, "Valor real": 160.26, "Reembolso": 11.990000000000009, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 871877, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.05, "Valor real": 185.21, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872689, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 222.51, "Valor real": 207.03, "Reembolso": 15.47999999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872691, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 162.45, "Valor real": 151.15, "Reembolso": 11.299999999999983, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872726, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 232.56, "Valor real": 216.39, "Reembolso": 16.170000000000016, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872745, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.16, "Valor real": 185.3, "Reembolso": 13.859999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872769, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.05, "Valor real": 205.68, "Reembolso": 15.370000000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872315, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 334.79, "Valor real": 311.5, "Reembolso": 23.29000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872865, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 221.48, "Valor real": 206.07, "Reembolso": 15.409999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872945, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.74, "Valor real": 160.72, "Reembolso": 12.02000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872968, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 173.8, "Valor real": 161.71, "Reembolso": 12.090000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872995, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.16, "Valor real": 185.3, "Reembolso": 13.859999999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873067, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 306.69, "Valor real": 285.36, "Reembolso": 21.329999999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873086, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 247.85, "Valor real": 230.61, "Reembolso": 17.23999999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873103, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.78, "Valor real": 228.68, "Reembolso": 17.099999999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873318, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.99, "Valor real": 160.96, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873344, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.08, "Valor real": 228.03, "Reembolso": 17.05000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872153, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.05, "Valor real": 185.21, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872193, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.1, "Valor real": 208.51, "Reembolso": 15.590000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872260, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.59, "Valor real": 205.25, "Reembolso": 15.340000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872297, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.78, "Valor real": 227.75, "Reembolso": 17.03, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872334, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.1, "Valor real": 208.51, "Reembolso": 15.590000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872452, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.48, "Valor real": 160.48, "Reembolso": 12, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872575, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.66, "Valor real": 184.84, "Reembolso": 13.819999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872629, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.66, "Valor real": 184.84, "Reembolso": 13.819999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872786, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 198.66, "Valor real": 184.84, "Reembolso": 13.819999999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872859, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.98, "Valor real": 205.61, "Reembolso": 15.369999999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872880, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.05, "Valor real": 185.21, "Reembolso": 13.840000000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872937, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.86, "Valor real": 160.83, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872948, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 220.98, "Valor real": 205.61, "Reembolso": 15.369999999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872963, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 244.78, "Valor real": 227.75, "Reembolso": 17.03, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872988, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.31, "Valor real": 207.77, "Reembolso": 15.539999999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873011, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.62, "Valor real": 160.61, "Reembolso": 12.009999999999991, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873460, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 203.85, "Valor real": 189.67, "Reembolso": 14.180000000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873478, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.13, "Valor real": 207.61, "Reembolso": 15.519999999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873580, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 224.17, "Valor real": 208.58, "Reembolso": 15.589999999999975, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873594, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 223.74, "Valor real": 208.18, "Reembolso": 15.560000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873735, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 172.99, "Valor real": 160.96, "Reembolso": 12.030000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873769, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 248.27, "Valor real": 231, "Reembolso": 17.27000000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873778, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 201.37, "Valor real": 187.36, "Reembolso": 14.009999999999991, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873899, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 222, "Valor real": 206.55, "Reembolso": 15.449999999999989, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873397, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 245.8, "Valor real": 228.7, "Reembolso": 17.100000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 873557, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 199.95, "Valor real": 186.04, "Reembolso": 13.909999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881448, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 335.179, "Valor real": 311.86, "Reembolso": 23.31899999999996, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880537, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.247, "Valor real": 224.46, "Reembolso": 16.787000000000006, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880541, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880626, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880667, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 648.4735, "Valor real": 603.36, "Reembolso": 45.11349999999993, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880698, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 285.6715, "Valor real": 265.8, "Reembolso": 19.87149999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880755, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 512.4285, "Valor real": 476.78, "Reembolso": 35.64850000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880759, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 590.962, "Valor real": 549.85, "Reembolso": 41.111999999999966, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880760, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 476.721, "Valor real": 443.56, "Reembolso": 33.161, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880806, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 247.3535, "Valor real": 230.15, "Reembolso": 17.20349999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880868, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 565.0755, "Valor real": 525.77, "Reembolso": 39.30550000000005, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880925, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 237.705, "Valor real": 221.17, "Reembolso": 16.535000000000025, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880952, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 263.35, "Valor real": 245.03, "Reembolso": 18.32000000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880990, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 285.085, "Valor real": 265.25, "Reembolso": 19.83499999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881036, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 263.5225, "Valor real": 245.19, "Reembolso": 18.332499999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881058, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 263.5225, "Valor real": 245.19, "Reembolso": 18.332499999999982, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881099, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 163.1045, "Valor real": 151.76, "Reembolso": 11.34450000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881112, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 351.118, "Valor real": 326.69, "Reembolso": 24.427999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881158, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881241, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 295.803, "Valor real": 275.23, "Reembolso": 20.57299999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881263, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881284, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 268.594, "Valor real": 249.91, "Reembolso": 18.683999999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881350, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.5475, "Valor real": 248.94, "Reembolso": 18.607500000000016, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881358, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 285.4185, "Valor real": 265.56, "Reembolso": 19.858499999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881366, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 300.8745, "Valor real": 279.94, "Reembolso": 20.934500000000014, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881425, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881880, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 578.5075, "Valor real": 538.26, "Reembolso": 40.24750000000006, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881909, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 338.6635, "Valor real": 315.1, "Reembolso": 23.563499999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881915, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.881, "Valor real": 249.25, "Reembolso": 18.630999999999972, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881927, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 237.337, "Valor real": 220.83, "Reembolso": 16.506999999999977, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881121, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 175.812, "Valor real": 163.58, "Reembolso": 12.232, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881566, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 237.107, "Valor real": 220.61, "Reembolso": 16.496999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881594, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.4785, "Valor real": 248.87, "Reembolso": 18.608499999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881712, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 338.6635, "Valor real": 315.1, "Reembolso": 23.563499999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881800, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 417.151, "Valor real": 388.13, "Reembolso": 29.021000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881805, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 351.1755, "Valor real": 326.75, "Reembolso": 24.4255, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881947, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.4425, "Valor real": 224.65, "Reembolso": 16.79249999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881978, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882009, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.1205, "Valor real": 224.35, "Reembolso": 16.7705, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881818, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 451.605, "Valor real": 420.19, "Reembolso": 31.41500000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 881825, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 291.0075, "Valor real": 270.76, "Reembolso": 20.247500000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882080, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 451.9155, "Valor real": 420.48, "Reembolso": 31.43549999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882089, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.7775, "Valor real": 249.15, "Reembolso": 18.62749999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882138, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 289.34, "Valor real": 269.21, "Reembolso": 20.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882153, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.5905, "Valor real": 307.59, "Reembolso": 23.000500000000045, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882162, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882165, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 263.189, "Valor real": 244.88, "Reembolso": 18.309000000000026, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882166, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 419.888, "Valor real": 390.68, "Reembolso": 29.20799999999997, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882207, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 163.852, "Valor real": 152.45, "Reembolso": 11.402000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882214, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 299.69, "Valor real": 278.84, "Reembolso": 20.850000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882314, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 203.09, "Valor real": 188.96, "Reembolso": 14.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882319, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882327, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 419.0485, "Valor real": 389.9, "Reembolso": 29.148500000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882426, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 441.025, "Valor real": 410.35, "Reembolso": 30.674999999999955, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882434, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 408.2155, "Valor real": 379.82, "Reembolso": 28.395500000000027, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882442, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 247.8365, "Valor real": 230.6, "Reembolso": 17.236500000000007, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882567, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.881, "Valor real": 249.25, "Reembolso": 18.630999999999972, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882580, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 903.417, "Valor real": 840.57, "Reembolso": 62.84699999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882623, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 589.0185, "Valor real": 548.04, "Reembolso": 40.978500000000054, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882630, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 307.763, "Valor real": 286.35, "Reembolso": 21.412999999999954, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882663, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.845, "Valor real": 225.02, "Reembolso": 16.82499999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882688, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 285.637, "Valor real": 265.77, "Reembolso": 19.86700000000002, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882714, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 237.107, "Valor real": 220.61, "Reembolso": 16.496999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882717, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 276.0805, "Valor real": 256.87, "Reembolso": 19.210499999999968, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882756, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.8895, "Valor real": 307.87, "Reembolso": 23.019499999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882768, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 285.4185, "Valor real": 265.56, "Reembolso": 19.858499999999992, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882842, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 338.422, "Valor real": 314.88, "Reembolso": 23.54200000000003, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882850, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 238.0845, "Valor real": 221.52, "Reembolso": 16.56449999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882851, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 246.9855, "Valor real": 229.8, "Reembolso": 17.18549999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882859, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 237.107, "Valor real": 220.61, "Reembolso": 16.496999999999986, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882869, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.8895, "Valor real": 307.87, "Reembolso": 23.019499999999994, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882897, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 882992, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 175.9845, "Valor real": 163.74, "Reembolso": 12.244499999999988, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883079, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 289.34, "Valor real": 269.21, "Reembolso": 20.129999999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883082, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 268.364, "Valor real": 249.7, "Reembolso": 18.663999999999987, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883101, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.444, "Valor real": 248.84, "Reembolso": 18.604000000000013, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883145, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 531.139, "Valor real": 494.19, "Reembolso": 36.94900000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883172, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 263.7755, "Valor real": 245.43, "Reembolso": 18.345500000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883197, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 558.877, "Valor real": 520, "Reembolso": 38.87699999999995, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883213, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 296.033, "Valor real": 275.44, "Reembolso": 20.593000000000018, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883245, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883250, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 494.2355, "Valor real": 459.85, "Reembolso": 34.38549999999998, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883320, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 163.507, "Valor real": 152.13, "Reembolso": 11.37700000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883371, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 351.7965, "Valor real": 327.32, "Reembolso": 24.476499999999987, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883406, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 307.8665, "Valor real": 286.45, "Reembolso": 21.416499999999985, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883516, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 161.552, "Valor real": 150.31, "Reembolso": 11.24199999999999, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883529, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 289.892, "Valor real": 269.73, "Reembolso": 20.161999999999978, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883536, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.372, "Valor real": 307.39, "Reembolso": 22.982000000000028, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883568, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.809, "Valor real": 307.8, "Reembolso": 23.009000000000015, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883569, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 299.69, "Valor real": 278.84, "Reembolso": 20.850000000000023, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883651, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 330.372, "Valor real": 307.39, "Reembolso": 22.982000000000028, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883722, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 267.651, "Valor real": 249.03, "Reembolso": 18.62100000000001, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883761, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 338.6635, "Valor real": 315.1, "Reembolso": 23.563499999999976, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883771, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 241.0975, "Valor real": 224.33, "Reembolso": 16.767499999999984, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 883235, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 258.5775, "Valor real": 240.59, "Reembolso": 17.987499999999983, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 872586, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 252.885, "Valor real": 235.29, "Reembolso": 17.595, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 880007, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 82.869, "Valor real": 77.1, "Reembolso": 5.7690000000000055, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 875714, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 174.869, "Valor real": 162.7, "Reembolso": 12.169000000000011, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 885482, "Transportadora": "Rodoviasul", "Mês": "Abril", "data": "2026-04-24", "Valor cobrado": 311.42, "Valor real": 289.76, "Reembolso": 21.660000000000025, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 876207, "Transportadora": "OCT", "Mês": "Abril", "data": "2026-04-29", "Valor cobrado": 482.94, "Valor real": 321.98, "Reembolso": 160.95999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 884952, "Transportadora": "Arlete", "Mês": "Abril", "data": "2026-04-29", "Valor cobrado": 885.61, "Valor real": 338.4, "Reembolso": 547.21, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 885252, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-06", "Valor cobrado": 763.52, "Valor real": 451.3, "Reembolso": 312.21999999999997, "Status": "Pago", "Problema": "Erro Cubagem"}, {"Nota fiscal": 887365, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-07", "Valor cobrado": 265.76, "Valor real": 215.48, "Reembolso": 50.28, "Status": "Pago", "Problema": "Erro Cubagem"}, {"Nota fiscal": 887230, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-07", "Valor cobrado": 297, "Valor real": 280.1, "Reembolso": 16.899999999999977, "Status": "Pago", "Problema": "Erro Cubagem"}, {"Nota fiscal": 889279, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-08", "Valor cobrado": 514.68, "Valor real": 237.11, "Reembolso": 277.56999999999994, "Status": "Pago", "Problema": "Erro Cubagem"}, {"Nota fiscal": 890809, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-13", "Valor cobrado": 444.22, "Valor real": 248.32, "Reembolso": 195.90000000000003, "Status": "Pago", "Problema": "Erro Cubagem"}, {"Nota fiscal": 878781, "Transportadora": "Transoliveira", "Mês": "Abril", "data": "2026-05-13", "Valor cobrado": 1159.44, "Valor real": 811.25, "Reembolso": 348.19000000000005, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 891445, "Transportadora": "Mindlog", "Mês": "Maio", "data": "2026-05-13", "Valor cobrado": 786.83, "Valor real": 291.39, "Reembolso": 495.44000000000005, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 1026988, "Transportadora": "Transoliveira", "Mês": "Maio", "data": "2026-05-14", "Valor cobrado": 665.91, "Valor real": 336.57, "Reembolso": 329.34, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 903351, "Transportadora": "Mindlog", "Mês": "Maio", "data": "2026-05-20", "Valor cobrado": 385.41, "Valor real": 361.39, "Reembolso": 24.02000000000004, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 905154, "Transportadora": "Log Tempo", "Mês": "Maio", "data": "2026-05-21", "Valor cobrado": 232.6, "Valor real": 162.6, "Reembolso": 70, "Status": "Pendente", "Problema": "Erro de Taxas"}, {"Nota fiscal": 900974, "Transportadora": "Transoliveira", "Mês": "Junho", "data": "2026-05-25", "Valor cobrado": 630.18, "Valor real": 319.82, "Reembolso": 310.35999999999996, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 881831, "Transportadora": "Log Tempo", "Mês": "Abril", "data": "2026-04-27", "Valor cobrado": 128.69, "Valor real": 88.69, "Reembolso": 40, "Status": "Pago", "Problema": "Erro de taxas"}, {"Nota fiscal": 911118, "Transportadora": "Transoliveira", "Mês": "Junho", "data": "2026-05-28", "Valor cobrado": 444.75, "Valor real": 334.79, "Reembolso": 109.95999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 910921, "Transportadora": "Transoliveira", "Mês": "Junho", "data": "2026-05-28", "Valor cobrado": 405.1, "Valor real": 248.79, "Reembolso": 156.31000000000003, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 911913, "Transportadora": "Transoliveira", "Mês": "Junho", "data": "2026-06-01", "Valor cobrado": 309.59, "Valor real": 266.44, "Reembolso": 43.14999999999998, "Status": "Pago", "Problema": "Erro de cubagem"}, {"Nota fiscal": 916366, "Transportadora": "Transoliveira", "Mês": "Junho", "data": "2026-06-08", "Valor cobrado": 386.75, "Valor real": 277.22, "Reembolso": 109.52999999999997, "Status": "Pago", "Problema": "Erro de cubagem"}];
+
+
+/* ============================================================
+   Indicadores de Faturas — Grupo TBX
+   Dados: abas "Base" e "RESSARCIMENTO"
+   Armazenamento: Firestore (se firebase-config.js estiver preenchido)
+                  com fallback automático para localStorage
+   ============================================================ */
+
+const STORAGE_BASE = 'tbx_faturas_base_v1';
+const STORAGE_RESS = 'tbx_faturas_ress_v1';
+const FS_COLLECTION_BASE = 'faturas_base';
+const FS_COLLECTION_RESS = 'faturas_ressarcimento';
+
+const MESES_ABREV = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const TIPOS_CUSTO = ['Reentrega','Devolução','Peças','Frete Grátis','Reposição'];
+
+const COLORS = {
+  blue:'#5b8def', teal:'#2dd4bf', amber:'#f5a623', rose:'#f2537c',
+  violet:'#a78bfa', green:'#34d399', red:'#f2637a', slate:'#7d89ab'
+};
+const PALETTE = ['#5b8def','#2dd4bf','#f5a623','#f2537c','#a78bfa','#34d399','#f2637a','#7d89ab','#e879f9','#60a5fa','#fb923c','#4ade80','#facc15'];
+
+if(typeof Chart === 'undefined'){
+  console.error('Chart.js não carregou (verifique a tag <script> no index.html / conexão de rede).');
+}else{
+  Chart.defaults.color = '#9aa5c4';
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.borderColor = '#232c4d';
+  if(typeof ChartDataLabels !== 'undefined'){
+    Chart.register(ChartDataLabels);
+  }else{
+    console.warn('chartjs-plugin-datalabels não carregou — os valores fixos nos gráficos não vão aparecer.');
+  }
+}
+
+/* Rótulos de valor fixos nos gráficos (sempre visíveis, não só no hover) */
+/* Usa um "chip" com fundo sólido atrás do texto — mesmo quando dois rótulos
+   ficam próximos, cada um continua legível em vez de se misturar. */
+function dlChip(color){
+  return {
+    backgroundColor: 'rgba(6,9,18,0.88)',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    color: color || '#e9edf7',
+    padding: {top:2, bottom:2, left:5, right:5},
+    font: {size:9, weight:'700'},
+    textStrokeWidth: 0
+  };
+}
+function dlBar(color, extra){
+  return Object.assign({ display:true, anchor:'end', align:'end', clip:false, clamp:true, offset:6,
+    formatter:(v)=> (v===0 ? '' : fmtBRL(v)) }, dlChip(color), extra||{});
+}
+function dlLine(color, extra){
+  return Object.assign({ display:true, anchor:'end', align:'top', clip:false, offset:10,
+    formatter:(v)=> fmtBRL(v) }, dlChip(color), extra||{});
+}
+function dlOnFill(color, extra){
+  return Object.assign({ display:true, anchor:'center', align:'center', clip:false,
+    formatter:(v)=> (v===0 ? '' : fmtBRL(v)) }, dlChip(color), extra||{});
+}
+
+let baseData = [];
+let ressData = [];
+let charts = {};
+
+/* ---------------- Firebase (opcional) ---------------- */
+let db = null;
+let firebaseReady = false;
+
+function initFirebase(){
+  const cfg = (typeof firebaseConfig !== 'undefined') ? firebaseConfig : null;
+  const configured = cfg && cfg.apiKey && !String(cfg.apiKey).startsWith('SUA_');
+  if(!configured || typeof firebase === 'undefined'){
+    firebaseReady = false;
+    return;
+  }
+  try{
+    firebase.initializeApp(cfg);
+    db = firebase.firestore();
+    firebaseReady = true;
+  }catch(e){
+    console.error('Falha ao iniciar Firebase:', e);
+    firebaseReady = false;
+  }
+}
+
+function sanitizeId(id){
+  return String(id).replace(/[\/\.\#\$\[\]]/g,'-').trim() || 'sem-id';
+}
+function baseDocId(rec){ return sanitizeId(rec['Transportadora']+'_'+monthKey(rec['Mês/Ano'])); }
+function ressDocId(rec){ return sanitizeId(rec['Nota fiscal']); }
+
+async function loadFromFirestore(){
+  const [baseSnap, ressSnap] = await Promise.all([
+    db.collection(FS_COLLECTION_BASE).get(),
+    db.collection(FS_COLLECTION_RESS).get()
+  ]);
+  const b = []; baseSnap.forEach(doc=>b.push(doc.data()));
+  const r = []; ressSnap.forEach(doc=>r.push(doc.data()));
+  return {b, r};
+}
+
+async function persistBatch(changedBase, changedRess){
+  if(firebaseReady && db){
+    try{
+      const batch = db.batch();
+      changedBase.forEach(rec=>{
+        batch.set(db.collection(FS_COLLECTION_BASE).doc(baseDocId(rec)), rec);
+      });
+      changedRess.forEach(rec=>{
+        batch.set(db.collection(FS_COLLECTION_RESS).doc(ressDocId(rec)), rec);
+      });
+      if(changedBase.length || changedRess.length) await batch.commit();
+    }catch(e){
+      console.error('Falha ao gravar no Firestore, dados ficaram salvos só localmente:', e);
+      toast('Firestore indisponível — salvo apenas neste navegador por enquanto.', true);
+    }
+  }
+  // localStorage funciona como cache offline (pode estar bloqueado em ambientes de preview sandboxed)
+  try{
+    localStorage.setItem(STORAGE_BASE, JSON.stringify(baseData));
+    localStorage.setItem(STORAGE_RESS, JSON.stringify(ressData));
+  }catch(e){
+    console.warn('localStorage indisponível neste ambiente — dados ficam só na memória desta sessão.', e);
+  }
+}
+
+/* Substitui TODO o conteúdo de uma coleção do Firestore pelos novos registros
+   (apaga o que existia antes) — usado na importação, que nunca é cumulativa. */
+async function replaceFirestoreCollection(colName, records, idFn){
+  if(!(firebaseReady && db)) return;
+  try{
+    const snap = await db.collection(colName).get();
+    const ops = [];
+    snap.forEach(doc=> ops.push({type:'delete', ref:doc.ref}));
+    records.forEach(rec=> ops.push({type:'set', ref:db.collection(colName).doc(idFn(rec)), data:rec}));
+    for(let i=0;i<ops.length;i+=400){
+      const batch = db.batch();
+      ops.slice(i,i+400).forEach(op=> op.type==='delete' ? batch.delete(op.ref) : batch.set(op.ref, op.data));
+      await batch.commit();
+    }
+  }catch(e){
+    console.error('Falha ao substituir coleção no Firestore:', e);
+    toast('Firestore indisponível — os dados ficaram salvos apenas neste navegador por enquanto.', true);
+  }
+}
+
+async function clearRemoteCollections(){
+  if(!(firebaseReady && db)) return;
+  const cols = [FS_COLLECTION_BASE, FS_COLLECTION_RESS];
+  for(const col of cols){
+    const snap = await db.collection(col).get();
+    const batch = db.batch();
+    snap.forEach(doc=>batch.delete(doc.ref));
+    if(!snap.empty) await batch.commit();
+  }
+}
+
+function renderSyncBadge(){
+  const el = document.getElementById('syncBadge');
+  if(!el) return;
+  if(firebaseReady){
+    el.className = 'sync-badge on';
+    el.innerHTML = '<span class="dot"></span>Firestore conectado';
+  }else{
+    el.className = 'sync-badge off';
+    el.innerHTML = '<span class="dot"></span>Somente local (sem Firebase)';
+  }
+}
+
+/* ---------------- Utils ---------------- */
+function num(v){
+  if(typeof v === 'number') return v;
+  if(v===null||v===undefined||v==='') return 0;
+  if(v instanceof Date) return 0;
+  const n = parseFloat(String(v).replace(/\./g,'').replace(',','.'));
+  if(!isNaN(n)) return n;
+  const n2 = parseFloat(v);
+  return isNaN(n2)?0:n2;
+}
+function pad(n){return String(n).padStart(2,'0');}
+function isoFromDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function normalizeDate(v){
+  if(v instanceof Date && !isNaN(v)) return isoFromDate(v);
+  if(typeof v === 'number'){
+    try{
+      const d = XLSX.SSF.parse_date_code(v);
+      if(d) return d.y+'-'+pad(d.m)+'-'+pad(d.d);
+    }catch(e){}
+  }
+  if(typeof v === 'string'){
+    let m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+    m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(m) return m[1]+'-'+pad(m[2])+'-'+pad(m[3]);
+  }
+  return null;
+}
+function monthKey(iso){ return iso ? iso.slice(0,7) : null; }
+function monthLabel(iso){
+  if(!iso) return '?';
+  const [y,m] = iso.split('-');
+  return MESES_ABREV[parseInt(m,10)-1] + '/' + y.slice(2);
+}
+function normalizeProblema(p){
+  const s = (p||'').trim().toLowerCase();
+  if(s.includes('taxa')) return 'Erro de Taxas';
+  if(s.includes('cubagem')) return 'Erro de Cubagem';
+  if(s.includes('abrang')) return 'Erro de Abrangência';
+  return (p||'Outros').trim();
+}
+function fmtBRL(v){
+  return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtBRLsigned(v){
+  const s = fmtBRL(Math.abs(v));
+  return v<0 ? '-'+s : s;
+}
+function toast(msg, isError){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast'+(isError?' error':'');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 5200);
+}
+
+/* ---------------- Filters ---------------- */
+function availableMonths(){
+  const set = new Set();
+  baseData.forEach(r=>{ const k = monthKey(r['Mês/Ano']); if(k) set.add(k); });
+  return [...set].sort();
+}
+function availableCarriers(){
+  const set = new Set();
+  baseData.forEach(r=>{ if(r['Transportadora']) set.add(r['Transportadora']); });
+  ressData.forEach(r=>{ if(r['Transportadora']) set.add(r['Transportadora']); });
+  return [...set].sort();
+}
+function populateFilters(){
+  const months = availableMonths();
+  const carriers = availableCarriers();
+  const fPeriodo = document.getElementById('fPeriodo');
+  const fTransp = document.getElementById('fTransp');
+  const fTipo = document.getElementById('fTipoCusto');
+
+  const prevPeriodo = fPeriodo.value;
+  const prevTransp = fTransp.value;
+
+  fPeriodo.innerHTML = '<option value="">Todos os meses</option>' +
+    months.map(m=>`<option value="${m}">${monthLabel(m+'-01')}</option>`).join('');
+  fTransp.innerHTML = '<option value="">Todas</option>' +
+    carriers.map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  if(!fTipo.dataset.built){
+    fTipo.innerHTML = '<option value="__total__">Total</option>' + TIPOS_CUSTO.map(t=>`<option value="${t}">${t}</option>`).join('');
+    fTipo.dataset.built = '1';
+  }
+
+  if(months.includes(prevPeriodo)) fPeriodo.value = prevPeriodo;
+  if(carriers.includes(prevTransp)) fTransp.value = prevTransp;
+}
+
+function getFilters(){
+  return {
+    periodo: document.getElementById('fPeriodo').value,
+    transp: document.getElementById('fTransp').value,
+    tipoCusto: document.getElementById('fTipoCusto').value || '__total__'
+  };
+}
+function filteredBase(){
+  const f = getFilters();
+  return baseData.filter(r=>{
+    if(f.periodo && monthKey(r['Mês/Ano']) !== f.periodo) return false;
+    if(f.transp && r['Transportadora'] !== f.transp) return false;
+    return true;
+  });
+}
+function filteredRess(){
+  const f = getFilters();
+  return ressData.filter(r=>{
+    if(f.transp && r['Transportadora'] !== f.transp) return false;
+    if(f.periodo){
+      const [y,m] = f.periodo.split('-');
+      const nomeMes = MESES_NOME[parseInt(m,10)-1];
+      if((r['Mês']||'').trim().toLowerCase() !== nomeMes.toLowerCase()) return false;
+    }
+    return true;
+  });
+}
+
+/* ---------------- KPIs ---------------- */
+function renderKPIs(){
+  const b = filteredBase();
+  const r = filteredRess();
+  const totalTransp = b.reduce((s,x)=>s+num(x['$ Transportadora']),0);
+  const totalCliente = b.reduce((s,x)=>s+num(x['$ Cliente']),0);
+  const totalFaturado = b.reduce((s,x)=>s+num(x['Faturado']),0);
+  const totalCustos = b.reduce((s,x)=>s+TIPOS_CUSTO.reduce((ss,t)=>ss+num(x[t]),0),0);
+  const ressPago = r.filter(x=>(x['Status']||'').trim().toLowerCase()==='pago').reduce((s,x)=>s+num(x['Reembolso']),0);
+  const ressPendente = r.filter(x=>(x['Status']||'').trim().toLowerCase()==='pendente').reduce((s,x)=>s+num(x['Reembolso']),0);
+  const resultado = totalFaturado + ressPago;
+
+  const cards = [
+    {label:'Frete cliente', value: fmtBRL(totalCliente), accent:'teal'},
+    {label:'Frete transportadora', value: fmtBRL(totalTransp), accent:'blue'},
+    {label:'Faturado (margem)', value: fmtBRLsigned(totalFaturado), accent:'amber', sub:'Frete cliente − frete transportadora'},
+    {label:'Custos variáveis', value: fmtBRLsigned(totalCustos), accent:'rose', sub:'Informativo — já refletido na margem'},
+    {label:'Ressarcimento pago', value: fmtBRL(ressPago), accent:'green'},
+    {label:'Ressarcimento pendente', value: fmtBRL(ressPendente), accent:'red'},
+    {label:'Resultado líquido', value: fmtBRLsigned(resultado), accent:'violet', sub:'Faturado (margem) + ressarcimento pago'},
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c=>`
+    <div class="kpi" style="--accent:var(--${c.accent})">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+      ${c.sub?`<div class="sub">${c.sub}</div>`:''}
+    </div>`).join('');
+
+  document.getElementById('dataCount').textContent =
+    `${baseData.length} registros de faturamento · ${ressData.length} registros de ressarcimento`;
+}
+
+/* ---------------- Chart helpers ---------------- */
+function upsertChart(id, config){
+  if(typeof Chart === 'undefined') return;
+  const ctx = document.getElementById(id);
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, config);
+}
+const gridOpt = {color:'#1c2543'};
+const baseScales = {
+  x:{grid:{display:false}, ticks:{font:{size:11}}},
+  y:{grid:gridOpt, ticks:{font:{size:11}}}
+};
+
+/* ---------------- Faturamento ---------------- */
+function renderFaturamento(){
+  const b = filteredBase();
+  const map = new Map();
+  b.forEach(r=>{
+    const k = monthKey(r['Mês/Ano']);
+    if(!k) return;
+    if(!map.has(k)) map.set(k,{transp:0,cliente:0,faturado:0});
+    const o = map.get(k);
+    o.transp += num(r['$ Transportadora']);
+    o.cliente += num(r['$ Cliente']);
+    o.faturado += num(r['Faturado']);
+  });
+  const keys = [...map.keys()].sort();
+  const labels = keys.map(k=>monthLabel(k+'-01'));
+
+  upsertChart('chartFaturamentoMensal', {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'Frete transportadora', data:keys.map(k=>map.get(k).transp), backgroundColor:COLORS.blue, borderRadius:4, order:2, datalabels:dlBar('#9fb8f2', {offset:4})},
+      {label:'Frete cliente', data:keys.map(k=>map.get(k).cliente), backgroundColor:COLORS.teal, borderRadius:4, order:2, datalabels:dlBar('#8fe9dd', {offset:26})},
+      {label:'Faturado', data:keys.map(k=>map.get(k).faturado), type:'line', borderColor:COLORS.amber, backgroundColor:COLORS.amber, tension:.35, yAxisID:'y1', pointRadius:3, order:0, datalabels:dlLine(COLORS.amber, {anchor:'center', align:'center', offset:0})}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:48}},
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}},
+      scales:{
+        x:baseScales.x,
+        y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}},
+        y1:{position:'right', grid:{display:false}, ticks:{callback:v=>fmtBRL(v), font:{size:10}}}
+      }
+    }
+  });
+
+  const carrierMap = new Map();
+  b.forEach(r=>{
+    const c = r['Transportadora']; if(!c) return;
+    carrierMap.set(c, (carrierMap.get(c)||0) + num(r['$ Transportadora']));
+  });
+  const sorted = [...carrierMap.entries()].sort((a,b)=>b[1]-a[1]);
+  upsertChart('chartFaturamentoTransp', {
+    type:'bar',
+    data:{ labels:sorted.map(s=>s[0]), datasets:[{
+      label:'Frete transportadora', data:sorted.map(s=>s[1]),
+      backgroundColor: sorted.map((_,i)=>PALETTE[i%PALETTE.length]), borderRadius:4,
+      datalabels: dlBar()
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      layout:{padding:{right:60}},
+      plugins:{legend:{display:false}, title:{display:true, text:'Total por transportadora', color:'#9aa5c4', font:{size:11, weight:'normal'}}},
+      scales:{ x:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}}, y:baseScales.x }
+    }
+  });
+}
+
+/* ---------------- Custos variáveis ---------------- */
+function renderCustos(){
+  const b = filteredBase();
+  const f = getFilters();
+
+  const tipoPares = TIPOS_CUSTO.map(t=> [t, b.reduce((s,x)=>s+num(x[t]),0)]).sort((a,b)=>a[1]-b[1]);
+  const tipoLabels = tipoPares.map(p=>p[0]);
+  const totaisTipo = tipoPares.map(p=>p[1]);
+  upsertChart('chartCustosTipo', {
+    type:'bar',
+    data:{ labels:tipoLabels, datasets:[{
+      label:'Total', data:totaisTipo,
+      backgroundColor: tipoLabels.map(t=>PALETTE[TIPOS_CUSTO.indexOf(t)%PALETTE.length]), borderRadius:4,
+      datalabels: dlBar(null, {anchor:'start', align:'top', offset:8})
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:50, bottom:10}},
+      plugins:{legend:{display:false}, title:{display:true, text:'Por tipo de custo — maior para menor prejuízo', color:'#9aa5c4', font:{size:11, weight:'normal'}}},
+      scales:{ x:baseScales.x, y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}} }
+    }
+  });
+
+  const carrierMap = new Map();
+  b.forEach(r=>{
+    const c = r['Transportadora']; if(!c) return;
+    const val = f.tipoCusto === '__total__'
+      ? TIPOS_CUSTO.reduce((s,t)=>s+num(r[t]),0)
+      : num(r[f.tipoCusto]);
+    carrierMap.set(c, (carrierMap.get(c)||0)+val);
+  });
+  const sorted = [...carrierMap.entries()].filter(x=>x[1]!==0).sort((a,b)=>a[1]-b[1]);
+  upsertChart('chartCustosTransp', {
+    type:'bar',
+    data:{ labels:sorted.map(s=>s[0]), datasets:[{
+      label: f.tipoCusto === '__total__' ? 'Total de custos' : f.tipoCusto,
+      data:sorted.map(s=>s[1]), backgroundColor: COLORS.rose, borderRadius:4,
+      datalabels: dlBar(null, {anchor:'start', align:'right', offset:8})
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      layout:{padding:{left:12, right:100}},
+      plugins:{legend:{display:false}, title:{display:true, text:'Por transportadora', color:'#9aa5c4', font:{size:11, weight:'normal'}}},
+      scales:{ x:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}}, y:baseScales.x }
+    }
+  });
+}
+
+/* ---------------- Ressarcimentos ---------------- */
+function renderRessarcimentos(){
+  const r = filteredRess();
+
+  const pago = r.filter(x=>(x['Status']||'').trim().toLowerCase()==='pago').reduce((s,x)=>s+num(x['Reembolso']),0);
+  const pendente = r.filter(x=>(x['Status']||'').trim().toLowerCase()==='pendente').reduce((s,x)=>s+num(x['Reembolso']),0);
+  upsertChart('chartRessStatus', {
+    type:'doughnut',
+    data:{ labels:['Pago','Pendente'], datasets:[{ data:[pago,pendente], backgroundColor:[COLORS.green, COLORS.red], borderWidth:0,
+      datalabels: Object.assign(dlOnFill(), {font:{size:8, weight:'700'}, padding:{top:1,bottom:1,left:3,right:3}}) }]},
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{
+        legend:{display:false},
+        title:{display:false},
+        tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+fmtBRL(ctx.parsed)}}
+      }
+    }
+  });
+
+  const carrierStatus = new Map();
+  r.forEach(x=>{
+    const c = x['Transportadora']; if(!c) return;
+    if(!carrierStatus.has(c)) carrierStatus.set(c,{Pago:0,Pendente:0});
+    const st = (x['Status']||'').trim().toLowerCase()==='pago' ? 'Pago' : 'Pendente';
+    carrierStatus.get(c)[st] += num(x['Reembolso']);
+  });
+  const carriers = [...carrierStatus.keys()].sort((a,b)=>{
+    const ta = carrierStatus.get(a).Pago+carrierStatus.get(a).Pendente;
+    const tb = carrierStatus.get(b).Pago+carrierStatus.get(b).Pendente;
+    return tb-ta;
+  });
+  upsertChart('chartRessTransp', {
+    type:'bar',
+    data:{ labels:carriers, datasets:[
+      {label:'Pago', data:carriers.map(c=>carrierStatus.get(c).Pago), backgroundColor:COLORS.green, stack:'s', borderRadius:3, datalabels: dlOnFill(COLORS.green)},
+      {label:'Pendente', data:carriers.map(c=>carrierStatus.get(c).Pendente), backgroundColor:COLORS.red, stack:'s', borderRadius:3, datalabels: dlOnFill(COLORS.red, {anchor:'end', align:'end', offset:4})}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:24}},
+      plugins:{ legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+        title:{display:true, text:'Por transportadora', color:'#9aa5c4', font:{size:11, weight:'normal'}} },
+      scales:{ x:{...baseScales.x, stacked:true}, y:{...baseScales.y, stacked:true, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}} }
+    }
+  });
+
+  const motivoMap = new Map();
+  r.forEach(x=>{
+    const m = normalizeProblema(x['Problema']);
+    motivoMap.set(m, (motivoMap.get(m)||0)+num(x['Reembolso']));
+  });
+  const motivos = [...motivoMap.entries()].sort((a,b)=>b[1]-a[1]);
+  upsertChart('chartRessMotivo', {
+    type:'bar',
+    data:{ labels:motivos.map(m=>m[0]), datasets:[{
+      data:motivos.map(m=>m[1]), backgroundColor: motivos.map((_,i)=>PALETTE[i%PALETTE.length]), borderRadius:4,
+      datalabels: dlBar()
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:22}},
+      plugins:{legend:{display:false}, title:{display:true, text:'Por motivo', color:'#9aa5c4', font:{size:11, weight:'normal'}}},
+      scales:{ x:baseScales.x, y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}} }
+    }
+  });
+}
+
+/* ---------------- Acumulado ---------------- */
+function renderAcumulado(){
+  const f = getFilters();
+  let b = baseData.filter(r=> !f.transp || r['Transportadora']===f.transp);
+  const map = new Map();
+  b.forEach(r=>{
+    const k = monthKey(r['Mês/Ano']); if(!k) return;
+    if(!map.has(k)) map.set(k,{transp:0,cliente:0,faturado:0});
+    const o = map.get(k);
+    o.transp += num(r['$ Transportadora']);
+    o.cliente += num(r['$ Cliente']);
+    o.faturado += num(r['Faturado']);
+  });
+  const keys = [...map.keys()].sort();
+  let accT=0, accC=0, accF=0;
+  const dataT=[], dataC=[], dataF=[];
+  keys.forEach(k=>{
+    accT+=map.get(k).transp; accC+=map.get(k).cliente; accF+=map.get(k).faturado;
+    dataT.push(accT); dataC.push(accC); dataF.push(accF);
+  });
+  upsertChart('chartAcumulado', {
+    type:'line',
+    data:{ labels: keys.map(k=>monthLabel(k+'-01')), datasets:[
+      {label:'Frete transportadora (acum.)', data:dataT, borderColor:COLORS.blue, backgroundColor:'transparent', tension:.3, pointRadius:3, datalabels:dlLine(COLORS.blue, {align:'bottom', offset:8})},
+      {label:'Frete cliente (acum.)', data:dataC, borderColor:COLORS.teal, backgroundColor:'transparent', tension:.3, pointRadius:3, datalabels:dlLine(COLORS.teal, {align:'top', offset:8})},
+      {label:'Faturado (acum.)', data:dataF, borderColor:COLORS.amber, backgroundColor:'rgba(245,166,35,.08)', fill:true, tension:.3, pointRadius:3, datalabels:dlLine(COLORS.amber, {align:'top', offset:8})}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:36, bottom:14}},
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}},
+      scales:{ x:baseScales.x, y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>fmtBRL(v)}} }
+    }
+  });
+}
+
+function renderAll(){
+  populateFilters();
+  renderKPIs();
+  renderFaturamento();
+  renderCustos();
+  renderRessarcimentos();
+  renderAcumulado();
+  renderSyncBadge();
+}
+
+/* ---------------- Import ---------------- */
+function findSheet(wb, name){
+  return wb.SheetNames.find(n => n.trim().toLowerCase() === name.toLowerCase());
+}
+async function handleFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try{
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, {type:'array', cellDates:true});
+      const baseSheet = findSheet(wb, 'base');
+      const ressSheet = findSheet(wb, 'ressarcimento');
+      if(!baseSheet && !ressSheet){
+        toast('Nenhuma aba "Base" ou "RESSARCIMENTO" encontrada no arquivo.', true);
+        return;
+      }
+
+      // Importação SEMPRE substitui o conteúdo anterior da(s) aba(s) presentes no
+      // arquivo — nunca acumula com o que já estava salvo.
+      let newBase = null, newRess = null;
+
+      if(baseSheet){
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[baseSheet], {defval:0});
+        newBase = [];
+        rows.forEach(row=>{
+          if(!row['Transportadora']) return;
+          const mesAno = normalizeDate(row['Mês/Ano']);
+          if(!mesAno) return;
+          newBase.push({
+            'Transportadora': String(row['Transportadora']).trim(),
+            'Mês/Ano': mesAno,
+            '$ Transportadora': num(row['$ Transportadora']),
+            '$ Cliente': num(row['$ Cliente']),
+            'Faturado': num(row['Faturado']),
+            'Reentrega': num(row['Reentrega']),
+            'Devolução': num(row['Devolução']),
+            'Peças': num(row['Peças']),
+            'Frete Grátis': num(row['Frete Grátis']),
+            'Reposição': num(row['Reposição'])
+          });
+        });
+      }
+
+      if(ressSheet){
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[ressSheet], {defval:''});
+        newRess = [];
+        rows.forEach(row=>{
+          const nf = row['Nota fiscal'];
+          if(!nf && nf!==0) return;
+          newRess.push({
+            'Nota fiscal': nf,
+            'Transportadora': String(row['Transportadora']||'').trim(),
+            'Mês': String(row['Mês']||'').trim(),
+            'data': normalizeDate(row['data']),
+            'Valor cobrado': num(row['Valor cobrado']),
+            'Valor real': num(row['Valor real']),
+            'Reembolso': num(row['Reembolso']),
+            'Status': String(row['Status']||'').trim(),
+            'Problema': String(row['Problema']||'').trim()
+          });
+        });
+      }
+
+      if(newBase){
+        baseData = newBase;
+        await replaceFirestoreCollection(FS_COLLECTION_BASE, baseData, baseDocId);
+      }
+      if(newRess){
+        ressData = newRess;
+        await replaceFirestoreCollection(FS_COLLECTION_RESS, ressData, ressDocId);
+      }
+      try{
+        localStorage.setItem(STORAGE_BASE, JSON.stringify(baseData));
+        localStorage.setItem(STORAGE_RESS, JSON.stringify(ressData));
+      }catch(e2){
+        console.warn('localStorage indisponível neste ambiente — dados ficam só na memória desta sessão.', e2);
+      }
+
+      renderAll();
+      const parts = [];
+      if(newBase) parts.push(`Base: ${newBase.length} registros (substituiu os dados anteriores)`);
+      if(newRess) parts.push(`Ressarcimento: ${newRess.length} registros (substituiu os dados anteriores)`);
+      toast('Importado com sucesso — ' + parts.join(' · '));
+    }catch(err){
+      console.error(err);
+      toast('Erro ao importar arquivo: '+err.message, true);
+    }finally{
+      document.getElementById('fileInput').value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('btnImport').addEventListener('click', ()=>document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', handleFile);
+document.getElementById('btnReset').addEventListener('click', async ()=>{
+  if(!confirm('Isso vai apagar todos os dados importados (inclusive no Firestore, se conectado) e voltar ao exemplo original. Continuar?')) return;
+  try{
+    await clearRemoteCollections();
+  }catch(e){
+    console.error(e);
+    toast('Não foi possível limpar o Firestore, apenas os dados locais foram restaurados.', true);
+  }
+  localStorage.removeItem(STORAGE_BASE);
+  localStorage.removeItem(STORAGE_RESS);
+  baseData = SEED_BASE.slice();
+  ressData = SEED_RESS.slice();
+  await persistBatch(baseData, ressData);
+  renderAll();
+  toast('Dados restaurados ao exemplo original.');
+});
+document.getElementById('fPeriodo').addEventListener('change', renderAll);
+document.getElementById('fTransp').addEventListener('change', renderAll);
+document.getElementById('fTipoCusto').addEventListener('change', ()=>{ renderKPIs(); renderCustos(); });
+
+/* ---------------- Boot ---------------- */
+async function boot(){
+  initFirebase();
+  if(firebaseReady){
+    try{
+      const {b, r} = await loadFromFirestore();
+      if(b.length || r.length){
+        baseData = b;
+        ressData = r;
+      }else{
+        // coleções vazias: popula o Firestore com os dados de exemplo
+        baseData = SEED_BASE.slice();
+        ressData = SEED_RESS.slice();
+        await persistBatch(baseData, ressData);
+      }
+    }catch(e){
+      console.error('Falha ao ler do Firestore, usando localStorage/exemplo:', e);
+      baseData = readLocal(STORAGE_BASE, SEED_BASE);
+      ressData = readLocal(STORAGE_RESS, SEED_RESS);
+    }
+  }else{
+    baseData = readLocal(STORAGE_BASE, SEED_BASE);
+    ressData = readLocal(STORAGE_RESS, SEED_RESS);
+  }
+  renderAll();
+}
+function readLocal(key, seed){
+  try{
+    const raw = localStorage.getItem(key);
+    if(raw){ const parsed = JSON.parse(raw); if(Array.isArray(parsed) && parsed.length) return parsed; }
+  }catch(e){}
+  return seed.slice();
+}
+
+boot();
+
+</script>
+</body>
+</html>
